@@ -1,26 +1,22 @@
 (() => {
   const chat = document.querySelector('#help');
-  const form = document.querySelector('#chat-compose');
-  const draft = document.querySelector('#guest-message');
-  const direct = document.querySelector('#direct-max');
-  const topics = document.querySelector('#chat-topics');
-  const thread = document.querySelector('#chat-thread');
+  const topics = document.querySelector('#faq-topics');
+  const answer = document.querySelector('#faq-answer');
   const canned = {
-    dates: { title: 'Даты и цены', question: 'Как узнать стоимость на мои даты?',
+    dates: { title: 'Даты и цены',
       reply: 'Выберите даты и гостей, чтобы рассчитать стоимость. Наличие номера подтвердит администратор',
-      action: 'Выбрать даты', match: /стоимост|цен[аыуе]|свободн.{0,8}(дат|номер)|как забронироват/ },
-    rooms: { title: 'Номера', question: 'Какие есть номера?',
+      action: 'Выбрать даты' },
+    rooms: { title: 'Номера',
       reply: 'Есть Семейный, Семейный комфорт, Комфорт+, Люкс и Президентский',
-      destination: 'rooms', action: 'Посмотреть номера', match: /какие.{0,22}номер|категори|фото номер|^номера$/ },
-    map: { title: 'Как добраться', question: 'Как до вас добраться?',
+      destination: 'rooms', action: 'Посмотреть номера' },
+    map: { title: 'Как добраться',
       reply: 'Мы у озера, на Партизанской, 1 в Листвянке',
-      destination: 'map', action: 'Открыть карту', match: /адрес|добрат|маршрут|где.{0,18}(вы|отель|находит)|карт[аеуы]/ },
-    breakfast: { title: 'Завтрак', question: 'Сколько стоит завтрак?',
-      reply: 'Завтрак стоит 500 ₽ за гостя', destination: 'gastro', action: 'Посмотреть гастродом',
-      match: /^(?:сколько стоит |какая цена |сколько за |есть ли |есть |платный |входит ли )?завтрак(?: у вас| в стоимость| платный)?[?! .]*$/ },
-    gastro: { title: 'Гастродом', question: 'Когда открыт гастродом?',
+      destination: 'map', action: 'Открыть карту' },
+    breakfast: { title: 'Завтрак',
+      reply: 'Завтрак стоит 500 ₽ за гостя', destination: 'gastro', action: 'Посмотреть гастродом' },
+    gastro: { title: 'Гастродом',
       reply: 'Гастродом открыт с 10:00 до 22:00',
-      destination: 'gastro', action: 'Посмотреть гастродом', match: /^(?:(?:когда |во сколько |со скольки |до скольки |как )?(?:открыт |работает )?)?(?:гастродом|ресторан)(?: работает| открыт)?[?! .]*$/ },
+      destination: 'gastro', action: 'Посмотреть гастродом' },
   };
   const profileUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/;
 
@@ -79,40 +75,11 @@
     }
   });
 
-  function appendMessage(text, own = false) {
-    const bubble = document.createElement('div');
-    bubble.className = own ? 'chat-bubble chat-bubble--guest' : 'chat-bubble';
-    const content = document.createElement('p');
-    content.textContent = text;
-    bubble.append(content);
-    thread.append(bubble);
-    return bubble;
-  }
-
-  function reply(question, topic) {
-    appendMessage(question, true);
-    const response = appendMessage(topic?.reply ?? 'С этим поможет администратор. Открываю чат в MAX');
-    if (topic?.action) {
-      const action = document.createElement('button');
-      action.type = 'button';
-      action.className = 'text-link';
-      action.textContent = topic.action;
-      action.addEventListener('click', () => {
-        chat.close();
-        if (topic.destination) go(topic.destination);
-        else openBooking();
-      });
-      response.append(action);
-    }
-    if (typeof thread.scrollTo === 'function') thread.scrollTo({ top: thread.scrollHeight, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
-    else thread.scrollTop = thread.scrollHeight;
-    if (!topic) direct.click();
-  }
-
   for (const [key, topic] of Object.entries(canned)) {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.dataset.topic = key;
+    chip.setAttribute('aria-pressed', 'false');
     chip.textContent = topic.title;
     topics.append(chip);
   }
@@ -121,29 +88,24 @@
     const chip = event.target.closest('[data-topic]');
     if (!chip) return;
     const topic = canned[chip.dataset.topic];
-    reply(topic.question, topic);
+    for (const button of topics.children) button.setAttribute('aria-pressed', String(chip === button));
+    const message = document.createElement('p');
+    message.textContent = topic.reply;
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'text-link';
+    action.textContent = topic.action;
+    action.addEventListener('click', () => {
+      chat.close();
+      if (topic.destination) go(topic.destination);
+      else openBooking();
+    });
+    answer.replaceChildren(message, action);
   });
 
   document.addEventListener('click', event => {
     const button = event.target.closest('button[data-help]');
     if (button) chat.showModal();
-  });
-
-  function findTopic(question) {
-    const text = question.toLocaleLowerCase('ru-RU').replaceAll('ё', 'е');
-    if (text.length > 80 || /\d|аллерг|питом|собак|оплат|возврат|отмен|перенос|перенес|ранний|поздн|ребен|дет[иея]|скид|уже|с моей|мой заказ|сколько человек|вдвоем|втроем|на двоих|[?].+/.test(text)) return;
-    if (canned.breakfast.match.test(text)) return canned.breakfast;
-    if (canned.gastro.match.test(text)) return canned.gastro;
-    const matches = [canned.dates, canned.rooms, canned.map].filter(topic => topic.match.test(text));
-    if (matches.length === 1) return matches[0];
-  }
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const question = draft.value.trim();
-    if (!question) return;
-    draft.value = '';
-    reply(question, findTopic(question));
   });
 
   let openedInitial = false;

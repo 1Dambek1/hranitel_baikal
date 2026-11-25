@@ -35,7 +35,7 @@
 
 В GitHub Settings → Pages выберите **GitHub Actions**. Workflow публикует папку `dist`. Контакты ресепшена задаются переменными Actions `BAIKAL_ADMIN_PHONE` и `BAIKAL_ADMIN_CHAT_URL`
 
-Кнопки связи открывают чат администратора в MAX. Простые вопросы об отеле обрабатываются внутри мини-приложения, остальные переводят гостя в MAX
+Кнопки связи открывают чат администратора в MAX. В разделе «Вопросы» доступны готовые ответы и прямая кнопка «Написать нам в MAX»
 
 GitHub Pages рассчитывает предварительную стоимость. Чтобы сохранить текущую ссылку в MAX и подключить проверку наличия, задайте в переменной Actions `BAIKAL_API_ORIGIN` HTTPS-origin сервера, а на сервере в `MINI_APP_ORIGIN` — `https://1dambek1.github.io`. Публичные ссылки на формы бронирования для Pages задаются через Actions `BAIKAL_HOTEL_BOOKING_URL` и `BAIKAL_GASTRO_BOOKING_URL`. Токены ECVI и iiko хранятся на сервере
 

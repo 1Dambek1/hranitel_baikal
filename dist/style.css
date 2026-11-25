@@ -53,11 +53,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .icon-library { position: absolute; width: 0; height: 0; overflow: hidden; }
 .icon { display: block; width: 21px; height: 21px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linejoin: round; stroke-linecap: round; }
 .section { width: min(100% - var(--edge) * 2, 1180px); margin-inline: auto; }
-.button, .icon-button, .header-chat, .bottom-nav > *, .floor-tabs button, .room-option, .scene-tabs button::before, .gallery-filters button, .chat-topics button {
+.button, .icon-button, .header-chat, .bottom-nav > *, .floor-tabs button, .room-option, .scene-tabs button::before, .gallery-filters button, .faq-topics button {
   transition: background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), transform .24s var(--ease), opacity .25s var(--ease);
 }
 .button { display: inline-flex; gap: 10px; align-items: center; justify-content: center; padding: 0 19px; min-height: 48px; border-radius: 15px; border: 1px solid transparent; font-size: 14px; font-weight: 650; text-align: center; }
-.button:active, .icon-button:active, .header-chat:active, .bottom-nav > *:active, .floor-tabs button:active, .room-option:active, .gallery-filters button:active, .chat-topics button:active { transform: scale(.95); }
+.button:active, .icon-button:active, .header-chat:active, .bottom-nav > *:active, .floor-tabs button:active, .room-option:active, .gallery-filters button:active, .faq-topics button:active { transform: scale(.95); }
 .primary { background: var(--forest); color: var(--white); }
 .gold { background: var(--gold); color: #28261c; }
 .outline { border-color: var(--border); color: var(--ink); background: var(--white); }
@@ -130,8 +130,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .rooms, .gallery-section, .events, .visit { padding-block: clamp(38px, 7vw, 92px); }
 .room-selector { display: flex; gap: 8px; overflow: auto; scrollbar-width: none; padding: 5px 1px 12px; }
 .room-selector::-webkit-scrollbar { display: none; }
-.room-option, .gallery-filters button, .chat-topics button { flex: none; min-height: 44px; padding: 0 15px; border: 1px solid var(--border); border-radius: 99px; font-size: 14px; font-weight: 600; white-space: nowrap; }
-.room-option[aria-pressed="true"], .gallery-filters button[aria-pressed="true"] { background: var(--forest); color: var(--white); border-color: var(--forest); }
+.room-option, .gallery-filters button, .faq-topics button { flex: none; min-height: 44px; padding: 0 15px; border: 1px solid var(--border); border-radius: 99px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.room-option[aria-pressed="true"], .gallery-filters button[aria-pressed="true"], .faq-topics button[aria-pressed="true"] { background: var(--forest); color: var(--white); border-color: var(--forest); }
 .room-card { display: grid; grid-template-columns: 1.42fr 1fr; overflow: hidden; border-radius: 24px; border: 1px solid var(--border); background: var(--white); animation: rise-in .38s var(--ease) both; }
 .room-visual { position: relative; min-width: 0; min-height: clamp(300px, 43vw, 510px); overflow: hidden; isolation: isolate; background: #d5c9b5; }
 .room-visual::after { content: ""; pointer-events: none; position: absolute; inset: auto 0 0; height: 120px; z-index: -1; background: linear-gradient(transparent, #1b241dc2); }
@@ -219,8 +219,7 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
 .sheet form { display: grid; gap: 10px; }
 .sheet form .button { width: 100%; justify-content: space-between; }
 .sheet label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; min-width: 0; }
-.sheet input, .sheet select, .sheet textarea { width: 100%; min-width: 0; min-height: 45px; border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; font-size: 16px; font-weight: 400; background: var(--paper); }
-.sheet textarea { resize: vertical; display: block; }
+.sheet input, .sheet select { width: 100%; min-width: 0; min-height: 45px; border: 1px solid var(--border); border-radius: 11px; padding: 8px 10px; font-size: 16px; font-weight: 400; background: var(--paper); }
 .dates, #extra-guest-fields:not(:empty) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .estimate { padding: 12px; background: var(--sage); border-radius: 12px; margin-top: 10px; font-size: 14px; animation: rise-in .3s var(--ease) both; }
 .estimate strong { font-size: 18px; }
@@ -229,17 +228,12 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
 .available-categories button { display: grid; gap: 2px; width: 100%; min-height: 44px; padding: 7px 10px; border-radius: 10px; background: var(--white); text-align: left; }
 .available-categories small { color: var(--muted); }
 .booking-contact { display: flex; justify-content: flex-start; margin-top: 9px; }
-.reception-chat h2 { font-size: clamp(34px, 8vw, 49px); }
-.chat-thread { display: flex; flex-direction: column; align-items: start; gap: 8px; min-height: 86px; max-height: min(38dvh, 300px); padding: 10px; overflow: auto; overscroll-behavior: contain; border-radius: 16px; background: #f3f0e8; }
-.chat-bubble { max-width: 88%; overflow-wrap: anywhere; padding: 8px 11px; background: var(--white); border-radius: 13px 13px 13px 4px; font-size: 14px; animation: rise-in .26s var(--ease) both; }
-.chat-bubble--guest { align-self: end; background: var(--forest); color: var(--white); border-radius: 13px 13px 4px 13px; }
-.chat-bubble button { display: flex; margin-top: 3px; min-height: 34px; }
-.chat-topics { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-block: 9px; }
-.chat-topics button { padding-inline: 10px; font-size: 13px; min-height: 42px; }
-.sheet .chat-composer { grid-template-columns: minmax(0, 1fr) 45px; align-items: center; gap: 7px; }
-.chat-composer .icon-button { width: 45px; height: 45px; background: var(--forest); color: var(--white); }
-.chat-extras { display: flex; flex-wrap: wrap; gap: 5px 14px; padding-top: 7px; }
-.chat-extras a { min-height: 40px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 650; color: #355644; text-decoration: underline; text-underline-offset: 4px; }
+.reception-help h2 { font-size: clamp(34px, 8vw, 49px); }
+.reception-contact { display: flex; justify-content: space-between; margin-bottom: 14px; }
+.faq-topics { display: flex; flex-wrap: wrap; gap: 6px; }
+.faq-topics button { padding-inline: 12px; font-size: 13px; }
+.faq-answer:not(:empty) { margin-top: 10px; padding: 11px 12px; background: var(--sage); border-radius: 12px; font-size: 14px; animation: rise-in .26s var(--ease) both; }
+.faq-answer button { min-height: 38px; margin-top: 3px; }
 
 .photo-dialog { position: fixed; overflow: hidden; width: min(100% - 18px, 960px); max-height: calc(100% - 24px); padding: 5px; border-radius: 19px; background: #142522; color: var(--white); touch-action: pan-y; }
 .photo-dialog .icon-button { color: var(--white); background: #28423c; }
@@ -305,7 +299,6 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   dialog::backdrop { background: #233b365f; }
   .photo-dialog { background: var(--white); color: var(--forest); }
   .photo-dialog .icon-button { background: var(--sage); color: var(--forest); }
-  .chat-thread { background: #f4f7f5; }
   .sheet { width: min(100%, 490px); max-width: 100%; max-height: calc(100% - 12px); max-height: calc(100dvh - 12px); margin: auto auto 0; border-radius: 23px 23px 0 0; padding: 18px 16px max(16px, env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 355px) {

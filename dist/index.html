@@ -13,10 +13,10 @@
   <link rel="preload" as="image" href="photos/winter-cover.webp" imagesrcset="photos/winter-mobile.webp 640w, photos/winter-cover.webp 1024w" imagesizes="(max-width: 680px) 100vw, 60vw">
   <link rel="preload" as="font" href="fonts/cormorant-cyr.woff2" type="font/woff2" crossorigin>
   <link rel="icon" href="photos/brand.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=17">
   <script src="https://st.max.ru/js/max-web-app.js" async></script>
   <script src="app.js?v=16" defer></script>
-  <script src="concierge.js?v=15" defer></script>
+  <script src="concierge.js?v=17" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -40,7 +40,7 @@
       <nav aria-label="Разделы отеля"><a href="#rooms">Номера</a><a href="#gallery">Фото</a><a href="#map">Как добраться</a></nav>
       <div class="header-controls">
         <button class="icon-button" type="button" id="fullscreen" aria-label="На весь экран" hidden><svg class="icon"><use href="#i-full"/></svg></button>
-        <a class="header-chat" id="hotel-reception" data-reception href="tel:+79953235878" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><span>Написать</span></a>
+        <a class="header-chat" id="hotel-reception" data-reception href="tel:+79953235878" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><span>Написать нам</span></a>
       </div>
     </div>
   </header>
@@ -175,20 +175,14 @@
     <a class="button outline booking-contact" data-reception href="tel:+79953235878" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg>Связаться по брони</a>
   </dialog>
 
-  <dialog class="sheet reception-chat" id="help" aria-labelledby="help-title">
-    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть чат"><svg class="icon"><use href="#i-close"/></svg></button>
-    <h2 id="help-title">Вопросы об отеле</h2>
-    <div class="chat-thread" id="chat-thread" role="log" aria-label="Диалог об отеле">
-      <p class="chat-bubble">Здравствуйте! Что подсказать?</p>
-    </div>
-    <div class="chat-topics" id="chat-topics" aria-label="Частые вопросы"></div>
-    <form class="chat-composer" id="chat-compose" aria-label="Вопрос об отеле">
-      <input type="text" id="guest-message" aria-label="Ваш вопрос" maxlength="280" placeholder="Ваш вопрос" autocomplete="off" required>
-      <button class="icon-button" type="submit" aria-label="Спросить"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
-    </form>
-    <div class="chat-extras">
-      <a id="direct-max" class="text-link" data-reception href="tel:+79953235878" target="_blank" rel="noopener">Чат с администратором <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-    </div>
+  <dialog class="sheet reception-help" id="help" aria-labelledby="help-title">
+    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
+    <h2 id="help-title">Помощь</h2>
+    <a id="direct-max" class="button primary reception-contact" data-reception href="tel:+79953235878" target="_blank" rel="noopener">
+      <svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg>Написать нам в MAX<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+    </a>
+    <div class="faq-topics" id="faq-topics" role="group" aria-label="Частые вопросы"></div>
+    <div id="faq-answer" class="faq-answer" aria-live="polite"></div>
   </dialog>
 
   <dialog class="photo-dialog" id="photo-viewer" aria-label="Просмотр фотографии">
