@@ -90,7 +90,12 @@ const { arrival, departure, room: bookingRoom, guests } = form.elements;
 const extraFields = document.querySelector('#extra-guest-fields');
 const estimate = document.querySelector('#estimate');
 const availabilityUrl = document.querySelector('meta[name="baikal-availability-url"]').content;
-if (availabilityUrl) document.querySelector('#booking-submit').firstChild.nodeValue = 'Проверить даты ';
+const bookingSubmit = document.querySelector('#booking-submit');
+const bookingAll = document.querySelector('#booking-all');
+if (availabilityUrl) {
+  bookingSubmit.firstChild.nodeValue = 'Проверить даты ';
+  bookingAll.hidden = false;
+}
 const photoViewer = document.querySelector('#photo-viewer');
 const receptionLink = document.querySelector('#hotel-reception');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -409,9 +414,67 @@ bookingRoom.addEventListener('change', updateGuests);
 guests.addEventListener('change', updateExtraGuests);
 booking.addEventListener('close', () => availabilityRequest?.abort());
 
+async function fetchAvailability(query, request) {
+  try {
+    const url = new URL(availabilityUrl, location.href);
+    url.search = query.toString();
+    const signal = typeof AbortSignal.any === 'function'
+      ? AbortSignal.any([request.signal, AbortSignal.timeout(7500)]) : request.signal;
+    const response = await fetch(url, { signal, credentials: 'omit', redirect: 'error' });
+    if (response.ok) return await response.json();
+  } catch {
+    // An unavailable PMS leaves the local estimate and reception link usable.
+  }
+}
+
+function renderAvailableCategories(availability, guestsCount) {
+  const message = document.createElement('p');
+  const list = document.createElement('ul');
+  list.className = 'available-categories';
+  const eligible = rooms.filter(room => guestsCount <= room.max);
+  const offers = availability?.status === 'live' && Array.isArray(availability.categories) ? availability.categories : [];
+  let confirmed = 0;
+  for (const room of eligible) {
+    const offer = offers.find(item => item?.room === room.id);
+    if (!Number.isSafeInteger(offer?.available) || offer.available < 0) continue;
+    confirmed++;
+    if (offer.available === 0) continue;
+    const row = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = room.name;
+    const note = document.createElement('small');
+    note.textContent = 'Свободных номеров: ' + offer.available;
+    if (offer.quote?.adults === guestsCount && Number.isFinite(offer.quote.amount) && offer.quote.amount > 0) {
+      note.textContent += ' · ' + formatPrice(offer.quote.amount) + ' за проживание';
+    }
+    button.append(note);
+    button.addEventListener('click', () => {
+      bookingRoom.value = room.id;
+      updateGuests();
+      if (form.reportValidity()) form.requestSubmit(bookingSubmit);
+      else estimate.hidden = true;
+    });
+    row.append(button);
+    list.append(row);
+  }
+  if (list.childElementCount) {
+    message.textContent = confirmed < eligible.length
+      ? 'Доступные варианты по данным ECVI · по остальным уточнит отель'
+      : 'Доступные варианты по данным ECVI';
+    estimate.replaceChildren(message, list);
+  } else {
+    message.textContent = confirmed && confirmed === eligible.length
+      ? 'На эти даты нет свободных номеров для выбранного числа гостей'
+      : 'Наличие номеров на эти даты уточнит отель';
+    estimate.replaceChildren(message);
+  }
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!form.reportValidity()) return;
+  const all = availabilityUrl && event.submitter === bookingAll;
+  if (all ? ![arrival, departure, guests].every(field => field.reportValidity()) : !form.reportValidity()) return;
   const room = rooms.find((item) => item.id === bookingRoom.value);
   const nights = (Date.parse(departure.value) - Date.parse(arrival.value)) / oneDay;
   const guestsCount = Number(guests.value);
@@ -421,7 +484,16 @@ form.addEventListener('submit', async (event) => {
     estimate.textContent = 'Выберите период от 1 до 365 ночей';
     return;
   }
-  const query = new URLSearchParams({ room: room.id, arrival: arrival.value, departure: departure.value });
+  const query = new URLSearchParams({ room: all ? 'all' : room.id, arrival: arrival.value, departure: departure.value });
+  if (all) {
+    if (guestsCount <= 3) query.set('adults', guestsCount);
+    estimate.textContent = 'Проверяем все категории';
+    const request = new AbortController();
+    availabilityRequest = request;
+    const availability = await fetchAvailability(query, request);
+    if (!request.signal.aborted) renderAvailableCategories(availability, guestsCount);
+    return;
+  }
   if (guestsCount <= room.base) query.set('adults', guestsCount);
   const extraDaily = room.extra ? Math.max(0, guestsCount - room.base) * room.extra :
     [...extraFields.querySelectorAll('select')].reduce((sum, input) => sum + Number(input.value), 0);
@@ -441,17 +513,7 @@ form.addEventListener('submit', async (event) => {
 
   const request = new AbortController();
   availabilityRequest = request;
-  let availability;
-  try {
-    const url = new URL(availabilityUrl, location.href);
-    url.search = query.toString();
-    const signal = typeof AbortSignal.any === 'function'
-      ? AbortSignal.any([request.signal, AbortSignal.timeout(7500)]) : request.signal;
-    const response = await fetch(url, { signal, credentials: 'omit', redirect: 'error' });
-    if (response.ok) availability = await response.json();
-  } catch {
-    // An unavailable PMS leaves the local estimate and reception link usable.
-  }
+  const availability = await fetchAvailability(query, request);
   if (request.signal.aborted) return;
   if (availability?.status !== 'live' || !Number.isSafeInteger(availability.available) || availability.available < 0) {
     text.textContent = fallback;

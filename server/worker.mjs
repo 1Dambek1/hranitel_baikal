@@ -31,7 +31,8 @@ export default {
     }
     if (pathname === '/hotel-contact.json') {
       const phone = /^\+7\d{10}$/.test(env.MAX_ADMIN_PHONE ?? '') ? env.MAX_ADMIN_PHONE : '+79953235878';
-      return Response.json({ chatUrl: adminContact(env), phone }, { headers: { 'Cache-Control': 'no-store' } });
+      return Response.json({ chatUrl: adminContact(env), phone, hotelBookingUrl: env.BAIKAL_HOTEL_BOOKING_URL,
+        gastroBookingUrl: env.BAIKAL_GASTRO_BOOKING_URL }, { headers: { 'Cache-Control': 'no-store' } });
     }
     const path = pathname === '/' ? '/index.html' : pathname;
     if (!Object.hasOwn(embeddedFiles, path)) return new Response('Not found', { status: 404 });

@@ -22,6 +22,8 @@ jobs:
           BAIKAL_ADMIN_PHONE: ${{ vars.BAIKAL_ADMIN_PHONE }}
           BAIKAL_ADMIN_CHAT_URL: ${{ vars.BAIKAL_ADMIN_CHAT_URL }}
           BAIKAL_API_ORIGIN: ${{ vars.BAIKAL_API_ORIGIN }}
+          BAIKAL_HOTEL_BOOKING_URL: ${{ vars.BAIKAL_HOTEL_BOOKING_URL }}
+          BAIKAL_GASTRO_BOOKING_URL: ${{ vars.BAIKAL_GASTRO_BOOKING_URL }}
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -29,7 +31,9 @@ jobs:
           const { BAIKAL_ADMIN_PHONE: p, BAIKAL_ADMIN_CHAT_URL: c } = process.env;
           const phone = /^\+7\d{10}$/.test(p ?? '') ? p : fallback.phone;
           const chatUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(c ?? '') ? c : null;
-          fs.writeFileSync('dist/hotel-contact.json', JSON.stringify({ chatUrl, phone }) + '\n');
+          const hotelBookingUrl = process.env.BAIKAL_HOTEL_BOOKING_URL || undefined;
+          const gastroBookingUrl = process.env.BAIKAL_GASTRO_BOOKING_URL || undefined;
+          fs.writeFileSync('dist/hotel-contact.json', JSON.stringify({ chatUrl, phone, hotelBookingUrl, gastroBookingUrl }) + '\n');
           const page = fs.readFileSync('dist/index.html', 'utf8');
           const href = chatUrl ?? 'tel:' + phone;
           let availabilityUrl = '';

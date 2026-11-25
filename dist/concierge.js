@@ -38,13 +38,27 @@
       const contact = await response.json();
       const url = profileUrl.test(contact.chatUrl ?? '') ? contact.chatUrl
         : /^\+7\d{10}$/.test(contact.phone ?? '') ? 'tel:' + contact.phone : '';
-      if (url) for (const link of document.querySelectorAll('[data-reception]')) link.href = url;
+      if (url && (!profileUrl.test(receptionLink.href) || profileUrl.test(url))) {
+        for (const link of document.querySelectorAll('[data-reception]')) link.href = url;
+      }
+      for (const [id, value] of [['hotel-booking', contact.hotelBookingUrl], ['gastro-booking', contact.gastroBookingUrl]]) {
+        if (!value) continue;
+        try {
+          const page = new URL(value);
+          if (page.protocol !== 'https:' || page.username || page.password) continue;
+          const link = document.getElementById(id);
+          link.href = page.href;
+          link.hidden = false;
+        } catch {
+          // Keep the existing reception or phone action for this section.
+        }
+      }
     } catch {
       // The contact embedded in the page remains available.
     }
   }
 
-  if (!profileUrl.test(receptionLink.href)) void loadContact();
+  void loadContact();
   document.addEventListener('click', event => {
     const link = event.target.closest('a[data-reception]');
     if (!link || !profileUrl.test(link.href) || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;

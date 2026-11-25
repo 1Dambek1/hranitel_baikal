@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node server/build.mjs",
     "start": "node server/http.mjs",
+    "ecvi:check": "npm run build --silent && node server/ecvi-check.mjs",
     "iiko:check": "node server/iiko-check.mjs --check"
   }
 }
