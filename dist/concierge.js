@@ -155,9 +155,10 @@
       if (target === 'dates') openBooking();
       else if (target === 'floor') go('floor-title', true);
       else if (target === 'walk') go('gallery', true);
-      else if (/^room-[1-8]$/.test(target)) {
+      else if (/^room-\d{1,2}$/.test(target)) {
         const roomNumber = Number(target.slice(5));
-        if (roomNumber >= 3) document.querySelector('[data-floor="' + (roomNumber === 8 ? '4' : '3') + '"]').click();
+        const floor = Object.keys(roomNumbers).find(key => roomNumbers[key].includes(roomNumber));
+        if (floor) selectFloor(floorTabs.find(tab => tab.dataset.floor === floor));
         go('floor-title', true);
       } else if (target === 'arrival') go('map', true);
       else if (Object.hasOwn(canned, target) && canned[target].destination) go(canned[target].destination, true);

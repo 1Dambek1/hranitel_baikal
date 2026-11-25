@@ -174,9 +174,20 @@ showRoom(selectedRoom);
 
 const floors = document.querySelector('#floor-tabs');
 const floorSelection = document.querySelector('#floor-selection');
-const roomNumbers = { 3: [3, 4, 5, 6, 7], 4: [8] };
+const roomNumbers = {
+  2: [1, 2],
+  3: [3, 4, 5, 6, 7],
+  4: [8, 9, 10, 11, 12],
+  5: [13, 14, 15, 16, 17],
+};
 const floorTabs = [...floors.children];
 let activeFloor = 0;
+
+function floorFeature(title, description, photo, attributes) {
+  return '<button type="button" class="floor-feature" ' + attributes +
+    '><img src="photos/' + photo + '" alt="" width="75" height="55" decoding="async">' +
+    '<span><strong>' + title + '</strong><small>' + description + '</small></span>' + icon('next') + '</button>';
+}
 
 function selectFloor(tab) {
   const nextFloor = floorTabs.indexOf(tab);
@@ -190,17 +201,17 @@ function selectFloor(tab) {
   if (floorSelection.hidden) return;
   const room = rooms.find(room => room.floor === Number(value));
   const numbers = roomNumbers[value] || [];
-  const admin = (label, ariaLabel = label) =>
+  const roomLink = number =>
     '<a class="floor-chip" data-reception href="' + receptionLink.href +
-    '" target="_blank" rel="noopener" aria-label="' + ariaLabel + '">' + label + '</a>';
-  floorSelection.innerHTML = room
-    ? '<button type="button" class="floor-feature" data-floor-room="' + room.id +
-      '"><img src="photos/' + room.images[0] + '" alt="" width="75" height="55" decoding="async">' +
-      '<span><strong>' + room.name + '</strong><small>от ' + formatPrice(room.weekday) + ' за ночь</small></span>' + icon('next') + '</button>'
-    : '<div class="floor-options"><p>' + (numbers.length ? 'Спросить о номере на ' + value + '-м этаже' :
-      'Номера ' + value + '-го этажа уточнит администратор') + '</p><div>' +
-      (numbers.length ? numbers.map(number => admin('№ ' + number, 'Спросить про номер № ' + number)).join('') : admin('Написать')) +
-      '<button type="button" class="floor-chip" data-room-catalog>Все категории</button></div></div>';
+    '" target="_blank" rel="noopener" aria-label="Спросить про номер № ' + number + '">№ ' + number + '</a>';
+  const feature = value === '1'
+    ? floorFeature('Гастродом', '10:00–22:00 · столики и банкеты', 'dining.webp', 'data-floor-gastro')
+    : room ? floorFeature(room.name, 'от ' + formatPrice(room.weekday) + ' за ночь', room.images[0],
+      'data-floor-room="' + room.id + '"') : '';
+  const roomLinks = numbers.length ? '<div class="floor-options"><p>Спросить о номере на ' + value +
+    '-м этаже</p><div>' + numbers.map(roomLink).join('') +
+    '<button type="button" class="floor-chip" data-room-catalog>Все категории</button></div></div>' : '';
+  floorSelection.innerHTML = '<div class="floor-content">' + feature + roomLinks + '</div>';
   if (!reducedMotion.matches) {
     floorSelection.firstElementChild.animate?.([
       { opacity: .45, transform: 'translateX(' + direction * 15 + 'px)' },
@@ -223,6 +234,13 @@ floors.addEventListener('keydown', event => {
 });
 floorSelection.addEventListener('click', event => {
   const button = event.target.closest('button');
+  if (button?.hasAttribute('data-floor-gastro')) {
+    const gastro = document.querySelector('#gastro');
+    gastro.open = true;
+    gastro.querySelector('summary').focus({ preventScroll: true });
+    gastro.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+    return;
+  }
   if (button?.dataset.floorRoom) showRoom(rooms.find(room => room.id === button.dataset.floorRoom));
   if (button && (button.hasAttribute('data-room-catalog') || button.dataset.floorRoom)) {
     document.querySelector('#rooms').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth' });
