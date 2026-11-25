@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Apply the guest-facing reception contact
+        env:
+          BAIKAL_ADMIN_PHONE: ${{ vars.BAIKAL_ADMIN_PHONE }}
+        run: |
+          node -e 'const fs = require("node:fs"); const p = process.env.BAIKAL_ADMIN_PHONE; if (p && /^\+7\d{10}$/.test(p)) fs.writeFileSync("dist/hotel-contact.json", JSON.stringify({chatUrl: null, phone: p}) + "\n")'
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
