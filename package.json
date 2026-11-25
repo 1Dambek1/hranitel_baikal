@@ -1,0 +1,10 @@
+{
+  "name": "hranitel-baikala",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node server/build.mjs",
+    "start": "node server/http.mjs"
+  }
+}
