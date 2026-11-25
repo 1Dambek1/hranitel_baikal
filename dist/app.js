@@ -1,22 +1,55 @@
 const rooms = [
-  { id: 'family', name: 'Семейный', weekday: 6100, weekend: 6500, base: 3, max: 6,
-    facts: ['35 м²', '3–6 гостей', 'Вид на лес', 'Без балкона'],
-    note: 'Базовый тариф на троих. До трёх дополнительных гостей можно разместить за отдельную плату' },
+  { id: 'family', name: 'Семейный', weekday: 6100, weekend: 6500, base: 3, max: 6, extra: 1500,
+    facts: ['35 м²', 'До 6 гостей', 'Лес'],
+    note: 'Две комнаты, три кровати 140 × 200 см, без балкона',
+    amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник, чайные пары и питьевая вода',
+    images: ['family-rooms.webp', 'family-beds.webp', 'family-interior.webp'] },
   { id: 'family-comfort', name: 'Семейный комфорт', weekday: 8100, weekend: 8800,
-    facts: ['Частичный вид на Байкал', 'Большая ванна'],
-    note: 'Вместимость и условия дополнительных мест уточняются у администратора' },
-  { id: 'comfort', name: 'Комфорт+', weekday: 8100, weekend: 8800, base: 2,
-    facts: ['40 м²', '2 гостя по базовому тарифу', 'Частичный вид на Байкал', 'Балкон'],
-    note: 'Дополнительное размещение и его стоимость можно уточнить у администратора' },
+    base: 3, max: 6, extra: 1500, facts: ['40 м²', 'До 6 гостей', 'Балкон'],
+    note: 'Вид на Байкал и лес, большая ванна, обеденный стол на четверых',
+    amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности и чайные пары',
+    images: ['spacious-bedroom.webp', 'seating-bedroom.webp', 'large-bath.webp'], illustrative: true },
+  { id: 'comfort', name: 'Комфорт+', weekday: 8100, weekend: 8800, base: 2, max: 3,
+    facts: ['40 м²', 'До 3 гостей', 'Балкон'],
+    note: 'Просторный собственный балкон с видом на Байкал и лес',
+    amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
+    images: ['sunlit-bedroom.webp', 'window-seats.webp', 'balcony-lounge.webp'], illustrative: true },
   { id: 'suite', name: 'Люкс', weekday: 8950, weekend: 9500, base: 2, max: 3,
-    facts: ['40 м²', '2 гостя по базовому тарифу', 'Пять окон с видом на Байкал', 'Балкон'],
-    note: 'Можно разместить одного гостя на дополнительном месте за отдельную плату' },
-  { id: 'presidential', name: 'Президентский', weekday: 17400, weekend: 18900, base: 2,
-    facts: ['40 м²', '2 гостя', 'Дополнительный диван'],
-    note: 'Условия размещения на дополнительном диване уточняются у администратора' },
+    facts: ['40 м²', 'Две комнаты', '5 окон на Байкал'],
+    note: 'Спальня и гостиная, два выхода на балкон, варианты с джакузи или душевой',
+    amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
+    images: ['suite-bed.webp', 'suite-lounge.webp', 'suite-bath.webp'], illustrative: true },
+  { id: 'presidential', name: 'Президентский', weekday: 17400, weekend: 18900, base: 2, max: 4, floor: 5,
+    facts: ['46 м²', 'До 4 гостей', '5 этаж'],
+    note: 'Пять панорамных окон, большой балкон, джакузи и отдельная душевая. В жилой зоне кожаный диван, кресло и стол на четверых. Есть туалетный столик, шкаф и отдельная прихожая',
+    amenities: 'Мини-бар, халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
+    images: ['presidential-bed.webp', 'presidential-view.webp', 'presidential-bath.webp'] },
 ];
 
 const photos = [
+  ['exterior.webp', 'Отель у Байкала'],
+  ['lobby.webp', 'Ресепшен'],
+  ['dining.webp', 'Гастродом'],
+  ['presidential-view.webp', 'Президентский · вид'],
+  ['presidential-bed.webp', 'Президентский · спальня'],
+  ['presidential-lounge.webp', 'Президентский · гостиная'],
+  ['presidential-bath.webp', 'Президентский · ванная'],
+  ['roof-balcony.webp', 'Вид с балкона'],
+  ['family-rooms.webp', 'Семейные интерьеры'],
+  ['family-beds.webp', 'Семейные интерьеры'],
+  ['family-interior.webp', 'Семейные интерьеры'],
+  ['suite-bed.webp', 'Спальня'],
+  ['suite-lounge.webp', 'Зона отдыха'],
+  ['suite-bath.webp', 'Ванная комната'],
+  ['sunlit-bedroom.webp', 'Спальня'],
+  ['window-seats.webp', 'У окна'],
+  ['balcony-lounge.webp', 'Вид из номера'],
+  ['white-bath.webp', 'Ванная комната'],
+  ['spacious-bedroom.webp', 'Интерьер номера'],
+  ['seating-bedroom.webp', 'Жилая зона'],
+  ['tea-table.webp', 'Чайный столик'],
+  ['large-bath.webp', 'Ванная комната'],
+  ['conference-room.webp', 'Конференц-зал'],
   ['winter.webp', 'Отель зимой'],
   ['reception.webp', 'Ресепшен'],
   ['bedroom.webp', 'Спальня'],
@@ -50,6 +83,7 @@ const roomDetail = document.querySelector('#room-detail');
 const booking = document.querySelector('#booking');
 const form = document.querySelector('#booking-form');
 const { arrival, departure, room: bookingRoom, guests } = form.elements;
+const extraFields = document.querySelector('#extra-guest-fields');
 const estimate = document.querySelector('#estimate');
 const photoViewer = document.querySelector('#photo-viewer');
 let selectedRoom = rooms[0];
@@ -66,13 +100,20 @@ function showRoom(room) {
   for (const option of roomOptions.children) {
     option.setAttribute('aria-pressed', String(option.dataset.room === room.id));
   }
+  const picture = (file) => '<button type="button" aria-label="Открыть фото" data-room-photo="' + file +
+    '"><img src="photos/' + file + '" alt="" decoding="async" loading="lazy"></button>';
+  const rate = room.extra ? 'Дополнительное место — 1 500 ₽/сутки' :
+    'До 7 лет на кровати с родителями — бесплатно · 7–14 лет — 1 500 ₽/сутки · старше 14 лет — 2 500 ₽/сутки';
   roomDetail.innerHTML =
-    '<div><h3>' + room.name + '</h3><ul class="room-facts">' +
+    '<div><div class="room-photos">' + picture(room.images[0]) + '<div class="room-side-photos">' +
+    room.images.slice(1).map(picture).join('') + '</div></div><div class="room-card-text"><h3>' +
+    room.name + '</h3>' + (room.illustrative ? '<p class="photo-note">Фото интерьеров отеля</p>' : '') + '<ul class="room-facts">' +
     room.facts.map((fact) => '<li>' + fact + '</li>').join('') + '</ul>' +
     '<dl class="room-prices"><div><dt>В будни</dt><dd>' + formatPrice(room.weekday) + '</dd></div>' +
     '<div><dt>В выходные</dt><dd>' + formatPrice(room.weekend) + '</dd></div></dl>' +
-    '<p>' + room.note + '</p><div class="actions"><button type="button" class="button primary" data-book>' +
-    'Выбрать даты</button><a href="#gallery" class="text-link">Фотогалерея отеля</a></div></div>';
+    '<details><summary>Подробнее</summary><p>' + room.note + '</p><p>' + room.amenities + '</p><p>Тариф на ' +
+    room.base + ' гостей · ' + rate + '</p></details><div class="actions"><button type="button" class="button primary" data-book>' +
+    'Выбрать даты</button></div></div></div>';
 }
 
 roomOptions.addEventListener('click', (event) => {
@@ -81,10 +122,39 @@ roomOptions.addEventListener('click', (event) => {
 });
 showRoom(selectedRoom);
 
+const floors = document.querySelector('#floor-tabs');
+const floorSelection = document.querySelector('#floor-selection');
+const roomNumbers = { 3: [3, 4, 5, 6, 7], 4: [8] };
+floors.addEventListener('click', event => {
+  const tab = event.target.closest('[data-floor]');
+  if (!tab) return;
+  const value = tab.dataset.floor;
+  for (const t of floors.children) t.setAttribute('aria-pressed', String(t === tab));
+  floorSelection.hidden = value === 'all';
+  if (floorSelection.hidden) return;
+  const matches = rooms.filter(room => room.floor === Number(value));
+  const buttons = matches.map(room => '<button type="button" class="button outline" data-floor-room="' +
+    room.id + '">' + room.name + '</button>');
+  if (matches.length === 0) {
+    for (const n of roomNumbers[value] || []) buttons.push('<button type="button" class="button outline" data-help="Здравствуйте! Подскажите категорию и фото номера № ' +
+      n + ' на ' + value + '-м этаже">№ ' + n + '</button>');
+  }
+  floorSelection.innerHTML = '<p>' + value + ' этаж' +
+    (matches.length === 0 ? ' · категории уточняются' : '') + '</p>' + buttons.join('') +
+    (matches.length ? '' : '<button type="button" class="button outline" data-room-catalog>Все категории</button>');
+});
+floorSelection.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (button?.dataset.floorRoom) showRoom(rooms.find(room => room.id === button.dataset.floorRoom));
+  if (button && (button.hasAttribute('data-room-catalog') || button.dataset.floorRoom)) {
+    document.querySelector('#rooms').scrollIntoView({ behavior: 'instant' });
+  }
+});
+
 const gallery = document.querySelector('#gallery-grid');
 gallery.innerHTML = photos.map(([file, caption], index) =>
   '<button class="gallery-item" type="button" data-photo="' + index + '" aria-label="Открыть фото: ' +
-  caption + '"><img src="photos/' + file + '" alt="" loading="lazy"><span>' + caption + '</span></button>'
+  caption + '"><img src="photos/' + file + '" alt="" loading="lazy" decoding="async"><span>' + caption + '</span></button>'
 ).join('');
 
 function showPhoto(index) {
@@ -106,6 +176,14 @@ gallery.addEventListener('click', (event) => {
   const item = event.target.closest('[data-photo]');
   if (!item) return;
   showPhoto(Number(item.dataset.photo));
+  photoViewer.showModal();
+});
+roomDetail.addEventListener('click', event => {
+  const button = event.target.closest('[data-room-photo]');
+  if (!button) return;
+  const index = photos.findIndex(([file]) => file === button.dataset.roomPhoto);
+  if (index < 0) return;
+  showPhoto(index);
   photoViewer.showModal();
 });
 
@@ -145,6 +223,25 @@ function updateGuests() {
   const limit = room?.max ?? 6;
   guests.replaceChildren(...Array.from({ length: limit }, (_, index) => new Option(index + 1, index + 1)));
   guests.value = Math.min(previousCount, limit);
+  updateExtraGuests();
+}
+
+function updateExtraGuests() {
+  const room = rooms.find(item => item.id === bookingRoom.value);
+  const extra = Math.max(0, Number(guests.value) - room.base);
+  extraFields.replaceChildren();
+  if (room.extra) return;
+  for (let i = 0; i < extra; i++) {
+    const label = document.createElement('label');
+    label.textContent = 'Возраст гостя ' + (room.base + i + 1);
+    const select = document.createElement('select');
+    select.name = 'extraGuest';
+    select.required = true;
+    select.append(new Option('Выберите возраст', ''), new Option('До 7 лет · с родителями', '0'),
+      new Option('7–14 лет', '1500'), new Option('Старше 14 лет', '2500'));
+    label.append(select);
+    extraFields.append(label);
+  }
 }
 
 let availabilityRequest;
@@ -162,6 +259,8 @@ form.addEventListener('input', () => {
 });
 arrival.addEventListener('change', updateDates);
 bookingRoom.addEventListener('change', updateGuests);
+guests.addEventListener('change', updateExtraGuests);
+booking.addEventListener('close', () => availabilityRequest?.abort());
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -176,15 +275,19 @@ form.addEventListener('submit', async (event) => {
     return;
   }
   const query = new URLSearchParams({ room: room.id, arrival: arrival.value, departure: departure.value });
+  const extraDaily = room.extra ? Math.max(0, guestsCount - room.base) * room.extra :
+    [...extraFields.querySelectorAll('select')].reduce((sum, input) => sum + Number(input.value), 0);
   const request = new AbortController();
   availabilityRequest = request;
-  estimate.textContent = 'Проверяем даты';
   let availability;
-  try {
-    const response = await fetch('./api/availability?' + query, { signal: request.signal });
-    if (response.ok) availability = await response.json();
-  } catch {
-    if (request.signal.aborted) return;
+  if (!location.hostname.endsWith('.github.io')) {
+    estimate.textContent = 'Проверяем даты';
+    try {
+      const response = await fetch('./api/availability?' + query, { signal: request.signal });
+      if (response.ok) availability = await response.json();
+    } catch {
+      if (request.signal.aborted) return;
+    }
   }
   if (request.signal.aborted) return;
   let lodging = 0;
@@ -193,13 +296,13 @@ form.addEventListener('submit', async (event) => {
     lodging += day === 0 || day === 6 ? room.weekend : room.weekday;
   }
   const price = document.createElement('strong');
-  price.textContent = formatPrice(lodging) + ' · ночей: ' + nights;
+  price.textContent = formatPrice(lodging + extraDaily * nights) + ' · ночей: ' + nights;
   const text = document.createElement('p');
   if (availability?.status === 'live' && Number.isInteger(availability.available)) {
     text.textContent = availability.available === 0 ? 'На эти даты нет свободных номеров этой категории' :
       'Свободных номеров этой категории: ' + availability.available + ' · условия размещения подтвердит отель';
   } else {
-    text.textContent = 'Ориентир по базовому тарифу · наличие уточнит отель';
+    text.textContent = 'Предварительная стоимость' + (extraDaily ? ' с доплатой за гостей' : '') + ' · наличие уточнит отель';
   }
   const write = document.createElement('button');
   write.className = 'mini-link';
@@ -231,6 +334,28 @@ for (const dialog of document.querySelectorAll('dialog')) {
   });
 }
 
+const fullscreen = document.querySelector('#fullscreen');
+if (document.fullscreenEnabled && typeof document.documentElement.requestFullscreen === 'function') {
+  fullscreen.hidden = false;
+  fullscreen.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      // The MAX container can reserve full-screen actions for its own UI.
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    fullscreen.setAttribute('aria-label', document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'На весь экран');
+  });
+}
+
+const navLinks = document.querySelectorAll('.bottom-nav a');
+for (const link of navLinks) link.addEventListener('click', () => {
+  for (const item of navLinks) item.removeAttribute('aria-current');
+  link.setAttribute('aria-current', 'page');
+});
+
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
@@ -245,4 +370,10 @@ if ('IntersectionObserver' in window) {
   }
 }
 
-window.WebApp?.ready?.();
+function activateMaxBridge() {
+  if (typeof window.WebApp?.ready !== 'function') return;
+  window.WebApp.ready();
+  window.dispatchEvent(new Event('max-bridge-ready'));
+}
+if (window.WebApp) activateMaxBridge();
+else document.querySelector('script[src="https://st.max.ru/js/max-web-app.js"]').addEventListener('load', activateMaxBridge, { once: true });

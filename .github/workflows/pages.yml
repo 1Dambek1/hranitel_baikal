@@ -20,8 +20,9 @@ jobs:
       - name: Apply the guest-facing reception contact
         env:
           BAIKAL_ADMIN_PHONE: ${{ vars.BAIKAL_ADMIN_PHONE }}
+          BAIKAL_ADMIN_CHAT_URL: ${{ vars.BAIKAL_ADMIN_CHAT_URL }}
         run: |
-          node -e 'const fs = require("node:fs"); const p = process.env.BAIKAL_ADMIN_PHONE; if (p && /^\+7\d{10}$/.test(p)) fs.writeFileSync("dist/hotel-contact.json", JSON.stringify({chatUrl: null, phone: p}) + "\n")'
+          node -e 'const fs = require("node:fs"); const fallback = JSON.parse(fs.readFileSync("dist/hotel-contact.json", "utf8")); const p = process.env.BAIKAL_ADMIN_PHONE; const c = process.env.BAIKAL_ADMIN_CHAT_URL; const phone = /^\+7\d{10}$/.test(p ?? "") ? p : fallback.phone; const chatUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(c ?? "") ? c : null; fs.writeFileSync("dist/hotel-contact.json", JSON.stringify({chatUrl, phone}) + "\n")'
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

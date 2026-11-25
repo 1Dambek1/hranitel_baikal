@@ -3,33 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f7efe2">
+  <meta name="theme-color" content="#f8f8fa">
   <meta name="description" content="Хранитель Байкала — отель на берегу озера в Листвянке">
   <meta name="robots" content="noindex">
   <title>Хранитель Байкала · Отель в Листвянке</title>
-  <link rel="preload" as="image" href="photos/winter.webp">
+  <link rel="preload" as="image" href="photos/exterior.webp" imagesrcset="photos/exterior-mobile.webp 700w, photos/exterior.webp 1160w" imagesizes="(max-width: 780px) 100vw, 1160px">
   <link rel="icon" href="photos/brand.png" type="image/png">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="shore.css">
-  <script src="https://st.max.ru/js/max-web-app.js" defer></script>
-  <script src="app.js" defer></script>
-  <script src="tour.js" defer></script>
+  <link rel="stylesheet" href="floors.css?v=8">
+  <script src="https://st.max.ru/js/max-web-app.js" async></script>
+  <script src="app.js?v=8" defer></script>
+  <script src="tour.js?v=8" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="section header-row">
       <a class="brand" href="#home"><img class="brand-mark" src="photos/brand.png" width="38" height="38" alt="">Хранитель Байкала</a>
       <nav aria-label="Разделы отеля"><a href="#hotel">Отель</a><a href="#rooms">Номера</a><a href="#gallery">Фото</a></nav>
-      <button class="chat-trigger" type="button" data-help>Написать</button>
+      <div class="header-controls"><button class="chat-trigger fullscreen-trigger" type="button" id="fullscreen" aria-label="На весь экран" hidden>⤢</button><button class="chat-trigger" type="button" data-help>Написать</button></div>
     </div>
   </header>
   <main id="home">
+    <section class="section floor-panel" aria-labelledby="floor-title">
+      <h2 id="floor-title">Этажи Байкала</h2>
+      <div id="floor-tabs" class="floor-tabs" aria-label="Этажи отеля">
+        <button type="button" data-floor="all" aria-pressed="true">Все</button>
+        <button type="button" data-floor="1" aria-pressed="false">1</button>
+        <button type="button" data-floor="2" aria-pressed="false">2</button>
+        <button type="button" data-floor="3" aria-pressed="false">3</button>
+        <button type="button" data-floor="4" aria-pressed="false">4</button>
+        <button type="button" data-floor="5" aria-pressed="false">5</button>
+      </div>
+      <div id="floor-selection" class="floor-selection" aria-live="polite" hidden></div>
+    </section>
     <section class="shore-cover section" aria-labelledby="hero-title">
-      <img class="cover-image" src="photos/winter.webp" alt="Зимний фасад отеля на берегу Байкала" fetchpriority="high">
+      <img class="cover-image" src="photos/exterior.webp" srcset="photos/exterior-mobile.webp 700w, photos/exterior.webp 1160w" sizes="(max-width: 780px) 100vw, 1160px" width="1160" height="776" alt="Кирпичный фасад отеля на берегу Байкала" fetchpriority="high" decoding="async">
       <div class="cover-content">
-        <p class="eyebrow">Листвянка · Берег озера</p>
+        <p class="eyebrow">Листвянка · Байкал</p>
         <h1 id="hero-title">Хранитель<br>Байкала</h1>
-        <p>Отель, из окон которого видно озеро и горы</p>
         <button class="button primary" type="button" data-book>Выбрать даты</button>
       </div>
       <a class="cover-next" href="#hotel" aria-label="Посмотреть отель">↓</a>
@@ -39,22 +51,17 @@
       <div class="hotel-description reveal">
         <p class="eyebrow">Об отеле</p>
         <h2>Дом у Байкала</h2>
-        <p>Кирпичный отель на первой линии Байкала в Листвянке. На входе — светлый ресепшен с фигурной лестницей. Семейные номера смотрят на лес, в некоторых других номерах есть балконы и окна на озеро</p>
-        <p>Утром можно позавтракать в гастродоме, а после прогулки вернуться на ужин. Для деловых встреч есть конференц-зал с панорамной верандой</p>
+        <p>Отель на берегу Байкала в Листвянке. Номера с видом на лес или озеро, гастродом и панорамная веранда</p>
         <div class="hotel-links"><a href="#map">Как добраться</a><a href="#events">Гастродом и события</a></div>
       </div>
-      <figure class="reception-photo reveal"><img src="photos/reception.webp" width="720" height="1280" alt="Светлый ресепшен со стеклянной лестницей" loading="lazy"><figcaption>Ресепшен</figcaption></figure>
-      <svg class="twig" viewBox="0 0 310 185" aria-hidden="true" fill="none">
-        <path d="M314 3Q213 11 153 55T6 167M254 15Q225 58 214 111M228 23Q171 24 111 12M178 41Q147 78 124 124M133 69Q78 64 34 49M105 95Q75 115 59 155"/>
-        <path d="M272 10l-11 24m-8-20 1 29m-15-26-2 25m-17-19 12 27m-19-24 3 33m-5-29-21 18m-5-26-19 17m3-19-30 8m13-10-28 3m70 34 14 21m-21-16 8 30m2-34 21 14m-31-5 2 31m-6-21-2 28m-4-19-5 28m-51-56 17 24m-27-18 2 32m-9-23-5 30m-3-18-8 29m-20-44 13 16m-27-17 9 18m-24-21 5 17m-16-21-2 14m-10-18-13 6m53 52 4 24m-15-13-5 28m-3-19-10 24m-17-17 4 18m-16-12 2 16m-12-11-4 13"/>
-      </svg>
+      <figure class="reception-photo"><img src="photos/lobby.webp" width="1280" height="854" alt="Светлый ресепшен со стеклянной лестницей" loading="lazy" decoding="async"><figcaption>Ресепшен</figcaption></figure>
     </section>
 
     <section class="walk-section" id="walk">
       <div class="section walk-inner">
         <div class="section-heading reveal"><div><p class="eyebrow">Интерьеры</p><h2>Прогулка по номеру</h2></div><p>Коснитесь зоны на модели или листайте фото</p></div>
         <div class="walk-layout">
-          <div class="walk-model"><div id="room-model"></div><p>3D-эскиз зон · без точных размеров</p></div>
+          <div class="walk-model"><div id="room-model"></div><p>3D-эскиз номера</p></div>
           <div class="walk-visual">
             <div class="walk-stage" id="walk-stage" aria-label="Фотографии зон номера">
               <div class="walk-frames" id="walk-frames"></div>
@@ -74,7 +81,6 @@
         <div class="room-selector" aria-label="Категории номеров" id="room-options"></div>
         <article class="room-detail" id="room-detail" aria-live="polite"></article>
       </div>
-      <details class="compact-info"><summary>Что есть в номере</summary><p>Чайник, телевизор, чайные пары, вода, тапочки, халат и полотенца</p></details>
     </section>
 
     <section class="gallery-section" id="gallery">
@@ -93,9 +99,12 @@
     </section>
   </main>
 
-  <footer><div class="section footer-inner"><a class="brand" href="#home"><img class="brand-mark" src="photos/brand.png" width="38" height="38" alt="">Хранитель Байкала</a><a href="tel:+79953235878">+7 995 323-58-78</a></div></footer>
+  <footer class="hotel-footer"><div class="section footer-inner"><div><strong>Хранитель Байкала</strong><p>Листвянка · Партизанская, 1</p></div><a href="tel:+79953235878">Позвонить</a><a href="#map">Маршрут</a></div></footer>
   <nav class="bottom-nav" aria-label="Быстрая навигация">
-    <a href="#hotel">Отель</a><a href="#walk">3D-тур</a><button type="button" data-help>Чат</button><button type="button" data-book>Номера</button>
+    <a href="#home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10H4V10m5 10v-6h6v6"/></svg>Отель</a>
+    <a href="#rooms"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19v-9m18 9v-5a3 3 0 0 0-3-3H9v5m-6 0h18M6 11h3"/></svg>Номера</a>
+    <a href="#gallery"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m3 17 5-5 3 3 3-4 7 6m-6-9h.1"/></svg>Фото</a>
+    <button type="button" data-help><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H8l-5 2 1-6a8 8 0 1 1 17-4ZM8 11h.1m4 0h.1m4 0h.1"/></svg>Написать</button>
   </nav>
 
   <dialog class="booking-dialog" id="booking" aria-labelledby="booking-title">
@@ -107,6 +116,7 @@
         <div class="dates"><label>Заезд<input type="date" name="arrival" required></label><label>Выезд<input type="date" name="departure" required></label></div>
         <label>Категория<select name="room" required></select></label>
         <label>Количество гостей<select name="guests" required></select></label>
+        <div id="extra-guest-fields"></div>
         <button class="button primary" type="submit">Проверить даты</button>
       </form>
       <div id="estimate" class="estimate" role="status" hidden></div>
@@ -125,6 +135,8 @@
       <button class="button primary" type="submit">В MAX</button>
     </form>
     <div class="chat-extras">
+      <a id="direct-max" href="https://max.ru/" target="_blank" rel="noopener" hidden>Открыть чат в MAX</a>
+      <button class="mini-link" type="button" id="copy-draft" hidden>Копировать текст</button>
       <button class="mini-link" type="button" id="copy-admin-phone" hidden>Скопировать номер администратора</button>
       <a href="tel:+79953235878">Позвонить в отель</a>
     </div>

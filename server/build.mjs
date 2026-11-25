@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 
 const project = new URL('../', import.meta.url);
 const dist = new URL('dist/', project);
-const names = ['index.html', 'style.css', 'shore.css', 'app.js', 'tour.js', 'photos/brand.png'];
+const names = ['index.html', 'style.css', 'shore.css', 'floors.css', 'app.js', 'tour.js', 'photos/brand.png'];
 for (const font of (await readdir(new URL('fonts/', dist))).sort()) {
   if (/^(lora|nunito)(\.|-)/.test(font)) names.push('fonts/' + font);
 }

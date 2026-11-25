@@ -2,10 +2,10 @@
   const bot = 'https://max.ru/id3812997183_bot';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const zones = [
-    { name: 'Спальня', image: 'bedroom.webp', mark: [2.15, 4.55], floor: '#e2ba9d' },
-    { name: 'Зона отдыха', image: 'lounge.webp', mark: [6.25, 4.75], floor: '#b8ccae' },
-    { name: 'Вид и балкон', image: 'balcony.webp', mark: [6.75, 1.05], floor: '#a0c4c3' },
-    { name: 'Ванная', image: 'bathroom.webp', mark: [1.2, 1.2], floor: '#edcf96' },
+    { name: 'Спальня', image: 'suite-bed.webp', mark: [2.15, 4.55], floor: '#e2ba9d' },
+    { name: 'Зона отдыха', image: 'suite-lounge.webp', mark: [6.25, 4.75], floor: '#b8ccae' },
+    { name: 'Вид и балкон', image: 'roof-balcony.webp', mark: [6.75, 1.05], floor: '#a0c4c3' },
+    { name: 'Ванная', image: 'suite-bath.webp', mark: [1.2, 1.2], floor: '#edcf96' },
   ];
   const stage = document.querySelector('#walk-stage');
   const frames = document.querySelector('#walk-frames');
@@ -59,7 +59,7 @@
   model.innerHTML = '<svg viewBox="10 0 336 228" role="group" aria-label="Интерактивный объёмный эскиз номера">' +
     boundary + walls + [3,2,0,1].map(zoneSvg).join('') + '</svg>';
   frames.innerHTML = zones.map((zone,i) => '<img class="walk-frame" src="photos/' + zone.image +
-    '" alt="' + zone.name + '" loading="lazy" data-zone-image="' + i + '">').join('');
+    '" alt="' + zone.name + '" loading="lazy" decoding="async" data-zone-image="' + i + '">').join('');
   menu.innerHTML = zones.map((zone,i) => '<button type="button" data-zone="' + i + '">' + zone.name + '</button>').join('');
 
   function showZone(index, direction = index >= zoneIndex ? 1 : -1) {
@@ -121,6 +121,8 @@
   const status = document.querySelector('#chat-status');
   const fallback = document.querySelector('#share-fallback');
   const copyPhone = document.querySelector('#copy-admin-phone');
+  const copyDraft = document.querySelector('#copy-draft');
+  const direct = document.querySelector('#direct-max');
   let contact = {};
   let contactRequested = false;
   const topics = {
@@ -188,10 +190,49 @@
       if (!response.ok) return;
       contact = await response.json();
       copyPhone.hidden = !/^\+7\d{10}$/.test(contact.phone ?? '');
+      if (isDirectMax(contact.chatUrl)) {
+        direct.href = contact.chatUrl;
+        direct.hidden = false;
+        copyPhone.hidden = true;
+      }
     } catch {
       // The MAX share dialog is still available when the contact cannot be loaded.
     }
   }
+
+  function isDirectMax(value) {
+    return /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(value ?? '');
+  }
+
+  function openDirect(url) {
+    if (window.WebApp?.platform && typeof window.WebApp.openMaxLink === 'function') {
+      try {
+        window.WebApp.openMaxLink(url);
+        return;
+      } catch { /* Use the regular profile link */ }
+    }
+    window.open(url, '_blank', 'noopener');
+  }
+
+  async function copyChatDraft() {
+    const text = draft.value.trim();
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      status.textContent = 'Текст скопирован · вставьте его в чат MAX';
+    } catch {
+      status.textContent = 'Удерживайте поле сообщения, чтобы скопировать текст';
+    }
+  }
+
+  direct.addEventListener('click', event => {
+    if (!isDirectMax(contact.chatUrl)) return;
+    event.preventDefault();
+    openDirect(contact.chatUrl);
+  });
+  copyDraft.addEventListener('click', copyChatDraft);
+  draft.addEventListener('input', () => { copyDraft.hidden = !draft.value.trim(); });
+  window.addEventListener('max-bridge-ready', openInitialDestination, { once: true });
 
   chips.innerHTML = Object.entries(topics).map(([id,t]) => '<button type="button" data-topic="' + id + '">' + t[0] + '</button>').join('');
   chips.addEventListener('click', event => {
@@ -201,6 +242,7 @@
 
   function openChat(prefill) {
     if (prefill) draft.value = prefill;
+    copyDraft.hidden = !draft.value.trim();
     chat.showModal();
     if (!contactRequested) {
       contactRequested = true;
@@ -219,8 +261,17 @@
     event.preventDefault();
     const text = draft.value.trim();
     if (!text) {
+      if (isDirectMax(contact.chatUrl)) {
+        openDirect(contact.chatUrl);
+        return;
+      }
       status.textContent = 'Введите сообщение';
       draft.focus();
+      return;
+    }
+    if (isDirectMax(contact.chatUrl)) {
+      void copyChatDraft();
+      openDirect(contact.chatUrl);
       return;
     }
     status.textContent = 'Выберите чат администратора в MAX и отправьте сообщение';
@@ -262,10 +313,16 @@
     }
   });
 
-  const target = window.WebApp?.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('open');
-  if (target) requestAnimationFrame(() => {
-    if (target === 'dates') openBooking();
-    else if (target === 'floor' || target === 'walk' || /^room-[1-8]$/.test(target)) go('walk','instant');
-    else if (Object.hasOwn(topics,target) && topics[target][2]) go(topics[target][2],'instant');
-  });
+  let openedInitial = false;
+  function openInitialDestination() {
+    const target = window.WebApp?.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('open');
+    if (!target || openedInitial) return;
+    openedInitial = true;
+    requestAnimationFrame(() => {
+      if (target === 'dates') openBooking();
+      else if (target === 'floor' || target === 'walk' || /^room-[1-8]$/.test(target)) go('walk','instant');
+      else if (Object.hasOwn(topics,target) && topics[target][2]) go(topics[target][2],'instant');
+    });
+  }
+  openInitialDestination();
 })();
