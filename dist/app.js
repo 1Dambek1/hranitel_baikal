@@ -3,7 +3,7 @@ const rooms = [
     facts: ['35 м²', 'До 6 гостей', 'Лес'],
     note: 'Две комнаты, три кровати 140 × 200 см, без балкона',
     amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник, чайные пары и питьевая вода',
-    images: ['family-rooms.webp', 'family-beds.webp', 'family-interior.webp'] },
+    images: ['family-beds.webp', 'family-rooms.webp', 'family-interior.webp'] },
   { id: 'family-comfort', name: 'Семейный комфорт', weekday: 8100, weekend: 8800,
     base: 3, max: 6, extra: 1500, facts: ['40 м²', 'До 6 гостей', 'Балкон'],
     note: 'Вид на Байкал и лес, большая ванна, обеденный стол на четверых',
@@ -21,17 +21,21 @@ const rooms = [
     images: ['suite-bed.webp', 'suite-lounge.webp', 'suite-bath.webp'], illustrative: true },
   { id: 'presidential', name: 'Президентский', weekday: 17400, weekend: 18900, base: 2, max: 4, floor: 5,
     facts: ['46 м²', 'До 4 гостей', '5 этаж'],
-    note: 'Пять панорамных окон, большой балкон, джакузи и отдельная душевая. В жилой зоне кожаный диван, кресло и стол на четверых. Есть туалетный столик, шкаф и отдельная прихожая',
+    note: 'Пять панорамных окон, большой балкон, джакузи и отдельная душевая',
+    description: 'В гостиной кожаный диван, кресло, обеденный стол на четверых и туалетный столик. Есть отдельная прихожая и шкаф',
     amenities: 'Мини-бар, халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
-    images: ['presidential-bed.webp', 'presidential-view.webp', 'presidential-bath.webp'] },
+    images: ['presidential-bed.webp', 'presidential-view.webp', 'presidential-lounge.webp', 'presidential-bath.webp'] },
 ];
 
 const photos = [
   ['exterior.webp', 'Отель у Байкала'],
-  ['lobby.webp', 'Ресепшен'],
-  ['dining.webp', 'Гастродом'],
-  ['presidential-view.webp', 'Президентский · вид'],
+  ['lake-terrace.webp', 'Байкал с балкона'],
   ['presidential-bed.webp', 'Президентский · спальня'],
+  ['lobby-staircase.webp', 'Лестница в холле'],
+  ['lake-window.webp', 'Байкал из номера'],
+  ['presidential-view.webp', 'Президентский · вид'],
+  ['dining.webp', 'Гастродом'],
+  ['lobby.webp', 'Ресепшен'],
   ['presidential-lounge.webp', 'Президентский · гостиная'],
   ['presidential-bath.webp', 'Президентский · ванная'],
   ['roof-balcony.webp', 'Вид с балкона'],
@@ -86,34 +90,72 @@ const { arrival, departure, room: bookingRoom, guests } = form.elements;
 const extraFields = document.querySelector('#extra-guest-fields');
 const estimate = document.querySelector('#estimate');
 const photoViewer = document.querySelector('#photo-viewer');
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const icon = (name) => '<svg class="icon" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
 let selectedRoom = rooms[0];
 let photoIndex = 0;
+let roomPhotoIndex = 0;
+let viewedPhotos = photos;
 
 roomOptions.innerHTML = rooms.map((room) =>
   '<button class="room-option" type="button" data-room="' + room.id + '" aria-pressed="false">' +
-  '<strong>' + room.name + '</strong><span>от ' + formatPrice(room.weekday) + '</span></button>'
+  room.name + '</button>'
 ).join('');
 bookingRoom.replaceChildren(...rooms.map((room) => new Option(room.name, room.id)));
 
 function showRoom(room) {
   selectedRoom = room;
+  roomPhotoIndex = 0;
   for (const option of roomOptions.children) {
-    option.setAttribute('aria-pressed', String(option.dataset.room === room.id));
+    const active = option.dataset.room === room.id;
+    option.setAttribute('aria-pressed', String(active));
+    if (active) roomOptions.scrollTo?.({ left: option.offsetLeft - roomOptions.firstElementChild.offsetLeft,
+      behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   }
-  const picture = (file) => '<button type="button" aria-label="Открыть фото" data-room-photo="' + file +
-    '"><img src="photos/' + file + '" alt="" decoding="async" loading="lazy"></button>';
   const rate = room.extra ? 'Дополнительное место — 1 500 ₽/сутки' :
     'До 7 лет на кровати с родителями — бесплатно · 7–14 лет — 1 500 ₽/сутки · старше 14 лет — 2 500 ₽/сутки';
   roomDetail.innerHTML =
-    '<div><div class="room-photos">' + picture(room.images[0]) + '<div class="room-side-photos">' +
-    room.images.slice(1).map(picture).join('') + '</div></div><div class="room-card-text"><h3>' +
-    room.name + '</h3>' + (room.illustrative ? '<p class="photo-note">Фото интерьеров отеля</p>' : '') + '<ul class="room-facts">' +
-    room.facts.map((fact) => '<li>' + fact + '</li>').join('') + '</ul>' +
+    '<div class="room-card"><div class="room-visual">' +
+    '<button class="room-image" type="button" data-room-photo aria-label="Увеличить фото номера"></button>' +
+    '<div class="room-photo-controls"><span class="photo-count">' + icon('image') + '<span id="room-photo-count" aria-live="polite"></span></span>' +
+    '<div><button type="button" class="icon-button" data-room-step="-1" aria-label="Предыдущее фото номера">' +
+    icon('back') + '</button><button type="button" class="icon-button" data-room-step="1" aria-label="Следующее фото номера">' +
+    icon('next') + '</button></div></div></div>' +
+    '<div class="room-card-text"><h3>' + room.name + '</h3>' +
+    (room.illustrative ? '<p class="photo-note">Фото интерьеров отеля</p>' : '') +
+    '<ul class="room-facts">' + room.facts.map((fact) => '<li>' + fact + '</li>').join('') + '</ul>' +
+    '<p class="room-note">' + room.note + '</p>' +
     '<dl class="room-prices"><div><dt>В будни</dt><dd>' + formatPrice(room.weekday) + '</dd></div>' +
     '<div><dt>В выходные</dt><dd>' + formatPrice(room.weekend) + '</dd></div></dl>' +
-    '<details><summary>Подробнее</summary><p>' + room.note + '</p><p>' + room.amenities + '</p><p>Тариф на ' +
-    room.base + ' гостей · ' + rate + '</p></details><div class="actions"><button type="button" class="button primary" data-book>' +
-    'Выбрать даты</button></div></div></div>';
+    '<details><summary>Что в номере и доплаты</summary>' + (room.description ? '<p>' + room.description + '</p>' : '') +
+    '<p>' + room.amenities + '</p><p>Тариф на ' +
+    room.base + ' гостей · ' + rate + '</p></details><button type="button" class="button primary" data-book>' +
+    'Выбрать даты' + icon('arrow') + '</button></div></div>';
+  showRoomPhoto(0);
+}
+
+async function showRoomPhoto(index) {
+  const room = selectedRoom;
+  const files = room.images;
+  roomPhotoIndex = (index + files.length) % files.length;
+  const next = roomPhotoIndex;
+  const file = files[next];
+  const frame = roomDetail.querySelector('[data-room-photo]');
+  const image = new Image();
+  image.alt = photos.find(([candidate]) => candidate === file)?.[1] ?? room.name;
+  image.loading = frame.firstElementChild ? 'eager' : 'lazy';
+  image.decoding = 'async';
+  image.src = 'photos/' + file;
+  if (frame.firstElementChild && typeof image.decode === 'function') {
+    try {
+      await image.decode();
+    } catch {
+      return;
+    }
+  }
+  if (room !== selectedRoom || next !== roomPhotoIndex || !frame.isConnected) return;
+  frame.replaceChildren(image);
+  roomDetail.querySelector('#room-photo-count').textContent = (next + 1) + ' / ' + files.length;
 }
 
 roomOptions.addEventListener('click', (event) => {
@@ -147,25 +189,54 @@ floorSelection.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (button?.dataset.floorRoom) showRoom(rooms.find(room => room.id === button.dataset.floorRoom));
   if (button && (button.hasAttribute('data-room-catalog') || button.dataset.floorRoom)) {
-    document.querySelector('#rooms').scrollIntoView({ behavior: 'instant' });
+    document.querySelector('#rooms').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   }
 });
 
 const gallery = document.querySelector('#gallery-grid');
-gallery.innerHTML = photos.map(([file, caption], index) =>
-  '<button class="gallery-item" type="button" data-photo="' + index + '" aria-label="Открыть фото: ' +
-  caption + '"><img src="photos/' + file + '" alt="" loading="lazy" decoding="async"><span>' + caption + '</span></button>'
-).join('');
+const galleryFilters = document.querySelector('#gallery-filters');
+const morePhotos = document.querySelector('#gallery-more');
+const hotelPhotos = new Set(['exterior.webp', 'lobby.webp', 'lobby-staircase.webp', 'dining.webp', 'roof-balcony.webp',
+  'conference-room.webp', 'winter.webp', 'reception.webp']);
+let galleryPhotos = photos;
+
+function showMorePhotos() {
+  const start = gallery.childElementCount;
+  gallery.insertAdjacentHTML('beforeend', galleryPhotos.slice(start, start + 7).map(([file, caption], index) =>
+    '<button class="gallery-item" type="button" data-photo="' + (start + index) + '" aria-label="Открыть фото: ' +
+    caption + '"><img src="photos/' + file + '" alt="" loading="lazy" decoding="async"><span>' + caption + '</span></button>'
+  ).join(''));
+  if (start > 0 && gallery.childElementCount > start) gallery.children[start].focus({ preventScroll: true });
+  morePhotos.hidden = gallery.childElementCount === galleryPhotos.length;
+}
+galleryFilters.addEventListener('click', event => {
+  const button = event.target.closest('[data-gallery]');
+  if (!button || button.getAttribute('aria-pressed') === 'true') return;
+  for (const filter of galleryFilters.children) filter.setAttribute('aria-pressed', String(filter === button));
+  const value = button.dataset.gallery;
+  galleryPhotos = value === 'all' ? photos : photos.filter(([file]) => hotelPhotos.has(file) === (value === 'hotel'));
+  gallery.replaceChildren();
+  showMorePhotos();
+});
+morePhotos.addEventListener('click', showMorePhotos);
+showMorePhotos();
+
+function openViewer(collection, index) {
+  viewedPhotos = collection;
+  photoIndex = index;
+  showPhoto(index);
+  photoViewer.showModal();
+}
 
 function showPhoto(index) {
   const direction = index < photoIndex ? '-12px' : '12px';
-  photoIndex = (index + photos.length) % photos.length;
-  const [file, caption] = photos[photoIndex];
+  photoIndex = (index + viewedPhotos.length) % viewedPhotos.length;
+  const [file, caption] = viewedPhotos[photoIndex];
   const image = document.querySelector('#viewer-image');
   image.src = 'photos/' + file;
   image.alt = caption;
   document.querySelector('#viewer-caption').textContent = caption;
-  document.querySelector('#viewer-count').textContent = (photoIndex + 1) + ' / ' + photos.length;
+  document.querySelector('#viewer-count').textContent = (photoIndex + 1) + ' / ' + viewedPhotos.length;
   const frame = photoViewer.querySelector('figure');
   frame.style.setProperty('--photo-enter', direction);
   frame.classList.remove('is-switching');
@@ -174,17 +245,15 @@ function showPhoto(index) {
 
 gallery.addEventListener('click', (event) => {
   const item = event.target.closest('[data-photo]');
-  if (!item) return;
-  showPhoto(Number(item.dataset.photo));
-  photoViewer.showModal();
+  if (item) openViewer(galleryPhotos, Number(item.dataset.photo));
 });
 roomDetail.addEventListener('click', event => {
-  const button = event.target.closest('[data-room-photo]');
-  if (!button) return;
-  const index = photos.findIndex(([file]) => file === button.dataset.roomPhoto);
-  if (index < 0) return;
-  showPhoto(index);
-  photoViewer.showModal();
+  const step = event.target.closest('[data-room-step]');
+  if (step) showRoomPhoto(roomPhotoIndex + Number(step.dataset.roomStep));
+  if (event.target.closest('[data-room-photo]')) {
+    const collection = selectedRoom.images.map(file => photos.find(([candidate]) => candidate === file));
+    openViewer(collection, roomPhotoIndex);
+  }
 });
 
 photoViewer.addEventListener('keydown', (event) => {
@@ -192,16 +261,65 @@ photoViewer.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') showPhoto(photoIndex + 1);
 });
 
-let photoTouchStart = null;
-photoViewer.addEventListener('touchstart', (event) => {
-  photoTouchStart = event.touches[0].clientX;
-}, { passive: true });
-photoViewer.addEventListener('touchend', (event) => {
-  if (photoTouchStart === null) return;
-  const distance = event.changedTouches[0].clientX - photoTouchStart;
-  photoTouchStart = null;
-  if (Math.abs(distance) > 50) showPhoto(photoIndex + (distance < 0 ? 1 : -1));
-}, { passive: true });
+function onHorizontalSwipe(element, gesture) {
+  let start;
+  element.addEventListener('touchstart', event => {
+    if (event.target.closest('.icon-button, .hero-copy, .scene-tabs')) return;
+    start = event.touches.length === 1 ? event.touches[0] : null;
+  }, { passive: true });
+  element.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+  element.addEventListener('touchend', event => {
+    if (!start) return;
+    const { clientX, clientY } = event.changedTouches[0];
+    const distance = clientX - start.clientX;
+    const vertical = Math.abs(clientY - start.clientY);
+    start = null;
+    if (Math.abs(distance) > Math.max(45, vertical * 1.5)) gesture(distance < 0 ? 1 : -1);
+  }, { passive: true });
+}
+onHorizontalSwipe(photoViewer, direction => showPhoto(photoIndex + direction));
+onHorizontalSwipe(roomDetail, direction => showRoomPhoto(roomPhotoIndex + direction));
+
+const sceneTabs = document.querySelector('#scene-tabs');
+const sceneMedia = document.querySelector('#hero-media');
+const scenes = [
+  { caption: 'Отель зимой', image: sceneMedia.firstElementChild },
+  { caption: 'Вид на Байкал', alt: 'Байкал и горы с балкона отеля', file: 'roof-balcony.webp', position: '47%' },
+  { caption: 'Ресепшен', alt: 'Ресепшен отеля с лестницей и панорамными окнами', file: 'lobby.webp', position: '44%' },
+];
+let currentScene = 0;
+let requestedScene = 0;
+async function showScene(index) {
+  requestedScene = index;
+  if (currentScene === index) return;
+  const scene = scenes[index];
+  if (!scene.image) {
+    const image = new Image();
+    image.className = 'hero-photo';
+    image.alt = scene.alt;
+    image.style.setProperty('--photo-y', scene.position);
+    image.src = 'photos/' + scene.file;
+    scene.image = image;
+    sceneMedia.append(image);
+  }
+  try {
+    await scene.image.decode();
+  } catch {
+    return;
+  }
+  if (requestedScene !== index) return;
+  scenes[currentScene].image.classList.remove('is-active');
+  scene.image.classList.add('is-active');
+  currentScene = index;
+  for (const tab of sceneTabs.children) tab.setAttribute('aria-pressed', String(Number(tab.dataset.scene) === index));
+  document.querySelector('#scene-caption').textContent = scene.caption;
+}
+sceneTabs.addEventListener('click', event => {
+  const tab = event.target.closest('[data-scene]');
+  if (tab) void showScene(Number(tab.dataset.scene));
+});
+onHorizontalSwipe(document.querySelector('.hero'), direction =>
+  void showScene((requestedScene + direction + scenes.length) % scenes.length));
 
 document.querySelector('#equipment').innerHTML = equipment.map(([item, price]) =>
   '<div><dt>' + item + '</dt><dd>' + price + '</dd></div>'
@@ -308,8 +426,10 @@ form.addEventListener('submit', async (event) => {
   write.className = 'mini-link';
   write.type = 'button';
   write.textContent = 'Написать о брони';
-  write.dataset.help = 'Здравствуйте! Интересует номер «' + room.name + '» с ' + query.get('arrival') +
-    ' по ' + query.get('departure') + ', гостей: ' + guestsCount;
+  const stayDate = new Intl.DateTimeFormat('ru-RU', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
+  write.dataset.help = 'Здравствуйте! Подскажите, свободен ли номер «' + room.name + '» с ' +
+    stayDate.format(Date.parse(query.get('arrival'))) + ' по ' + stayDate.format(Date.parse(query.get('departure'))) +
+    '. Гостей: ' + guestsCount;
   estimate.replaceChildren(price, text, write);
 });
 
@@ -353,7 +473,7 @@ if (document.fullscreenEnabled && typeof document.documentElement.requestFullscr
 const navLinks = document.querySelectorAll('.bottom-nav a');
 for (const link of navLinks) link.addEventListener('click', () => {
   for (const item of navLinks) item.removeAttribute('aria-current');
-  link.setAttribute('aria-current', 'page');
+  link.setAttribute('aria-current', 'location');
 });
 
 if ('IntersectionObserver' in window) {

@@ -2,9 +2,9 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 
 const project = new URL('../', import.meta.url);
 const dist = new URL('dist/', project);
-const names = ['index.html', 'style.css', 'shore.css', 'floors.css', 'app.js', 'tour.js', 'photos/brand.png'];
+const names = ['index.html', 'style.css', 'app.js', 'concierge.js', 'photos/brand.png'];
 for (const font of (await readdir(new URL('fonts/', dist))).sort()) {
-  if (/^(lora|nunito)(\.|-)/.test(font)) names.push('fonts/' + font);
+  if (/^(cormorant|onest)(\.|-)/.test(font)) names.push('fonts/' + font);
 }
 for (const photo of (await readdir(new URL('photos/', dist))).sort()) {
   if (photo.endsWith('.webp')) names.push('photos/' + photo);
