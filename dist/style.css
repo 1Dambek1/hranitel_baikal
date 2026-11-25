@@ -99,9 +99,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .floor-panel { background: #edeae0; border-bottom: 1px solid #dcd9cc; }
 .floor-inner { padding-block: 12px; }
 .floor-row { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.floor-intro { display: flex; align-items: center; gap: 10px; }
 .floor-heading { display: flex; align-items: center; gap: 8px; }
 .floor-heading .icon { width: 19px; height: 19px; color: #695839; }
 .floor-heading h2 { font-size: clamp(28px, 3.8vw, 41px); }
+.floor-lift { display: inline-flex; align-items: center; flex: none; gap: 7px; min-height: 44px; padding: 5px 10px 5px 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--white); font-size: 13px; font-weight: 650; transition: transform .24s var(--ease); }
+.floor-lift img { display: block; border-radius: 6px; object-fit: cover; object-position: 39% center; }
+.floor-lift:active { transform: scale(.95); }
 .floor-tabs { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: min(100%, 370px); padding: 4px; border-radius: 17px; background: var(--forest); }
 .floor-tabs::before { content: ""; position: absolute; z-index: -1; inset: 4px auto 4px 4px; width: calc((100% - 8px) / 6); border-radius: 13px; background: var(--gold); transform: translateX(calc(var(--active-floor, 0) * 100%)); transition: transform .37s var(--ease); }
 .floor-tabs button { min-height: 44px; padding: 0 3px; border-radius: 13px; color: #f2f2e8; font-size: 14px; font-weight: 650; }
@@ -278,6 +282,7 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   .hero-controls { bottom: 9px; left: 0; }
   .floor-panel { background: var(--white); border-color: var(--border); }
   .floor-row { align-items: start; flex-direction: column; gap: 8px; }
+  .floor-intro { width: 100%; justify-content: space-between; }
   .floor-tabs { width: 100%; background: #f3f6f3; box-shadow: inset 0 0 0 1px var(--border); }
   .floor-tabs::before { background: #efd6ae; box-shadow: 0 1px 4px #45341822; }
   .floor-tabs button { color: var(--forest); }

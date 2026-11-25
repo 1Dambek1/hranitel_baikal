@@ -13,9 +13,9 @@
   <link rel="preload" as="image" href="photos/winter-cover.webp" imagesrcset="photos/winter-mobile.webp 640w, photos/winter-cover.webp 1024w" imagesizes="(max-width: 680px) 100vw, 60vw">
   <link rel="preload" as="font" href="fonts/cormorant-cyr.woff2" type="font/woff2" crossorigin>
   <link rel="icon" href="photos/brand.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
   <script src="https://st.max.ru/js/max-web-app.js" async></script>
-  <script src="app.js?v=15" defer></script>
+  <script src="app.js?v=16" defer></script>
   <script src="concierge.js?v=15" defer></script>
 </head>
 <body>
@@ -70,7 +70,12 @@
     <section class="floor-panel" aria-labelledby="floor-title">
       <div class="section floor-inner">
         <div class="floor-row">
-          <div class="floor-heading"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><h2 id="floor-title">Этажи Байкала</h2></div>
+          <div class="floor-intro">
+            <div class="floor-heading"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><h2 id="floor-title">Этажи Байкала</h2></div>
+            <button class="floor-lift" id="elevator-photo" type="button" aria-label="Открыть фото лифта" aria-haspopup="dialog">
+              <img src="photos/elevator.webp" alt="" width="30" height="30" loading="lazy" decoding="async">Лифт
+            </button>
+          </div>
           <div id="floor-tabs" class="floor-tabs" aria-label="Этажи отеля">
             <button type="button" data-floor="all" aria-pressed="true">Все</button>
             <button type="button" data-floor="1" aria-pressed="false" aria-label="1 этаж">1</button>

@@ -32,6 +32,7 @@ const photos = [
   ['lake-terrace.webp', 'Байкал с балкона'],
   ['presidential-bed.webp', 'Президентский · спальня'],
   ['lobby-staircase.webp', 'Лестница в холле'],
+  ['elevator.webp', 'Лифт рядом с лестницей'],
   ['lake-window.webp', 'Байкал из номера'],
   ['presidential-view.webp', 'Президентский · вид'],
   ['dining.webp', 'Гастродом'],
@@ -250,7 +251,7 @@ floorSelection.addEventListener('click', event => {
 const gallery = document.querySelector('#gallery-grid');
 const galleryFilters = document.querySelector('#gallery-filters');
 const morePhotos = document.querySelector('#gallery-more');
-const hotelPhotos = new Set(['exterior.webp', 'lobby.webp', 'lobby-staircase.webp', 'dining.webp', 'roof-balcony.webp',
+const hotelPhotos = new Set(['exterior.webp', 'lobby.webp', 'lobby-staircase.webp', 'elevator.webp', 'dining.webp', 'roof-balcony.webp',
   'conference-room.webp', 'winter.webp', 'reception.webp']);
 let galleryPhotos = photos;
 
@@ -299,6 +300,9 @@ function showPhoto(index) {
 gallery.addEventListener('click', (event) => {
   const item = event.target.closest('[data-photo]');
   if (item) openViewer(galleryPhotos, Number(item.dataset.photo));
+});
+document.querySelector('#elevator-photo').addEventListener('click', () => {
+  openViewer(photos, photos.findIndex(([file]) => file === 'elevator.webp'));
 });
 roomDetail.addEventListener('click', event => {
   const step = event.target.closest('[data-room-step]');
