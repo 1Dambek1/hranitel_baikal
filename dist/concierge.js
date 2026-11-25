@@ -49,7 +49,14 @@
     const link = event.target.closest('a[data-reception]');
     if (!link || !profileUrl.test(link.href) || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const bridge = window.WebApp;
-    if (!bridge?.platform || bridge.platform === 'web' || typeof bridge.openMaxLink !== 'function') return;
+    if (bridge?.platform === 'web' || document.referrer.startsWith('https://web.max.ru/')) {
+      const webChat = new URL(link.href);
+      webChat.hostname = 'web.max.ru';
+      window.open(webChat.href, '_blank', 'noopener');
+      event.preventDefault();
+      return;
+    }
+    if (!bridge?.platform || typeof bridge.openMaxLink !== 'function') return;
     try {
       bridge.openMaxLink(link.href);
       event.preventDefault();
