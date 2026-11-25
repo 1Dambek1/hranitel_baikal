@@ -2,22 +2,27 @@
   const chat = document.querySelector('#help');
   const form = document.querySelector('#chat-compose');
   const draft = document.querySelector('#guest-message');
-  const send = form.querySelector('[type="submit"]');
-  const status = document.querySelector('#chat-status');
   const direct = document.querySelector('#direct-max');
-  const fallback = document.querySelector('#share-fallback');
   const topics = document.querySelector('#chat-topics');
-  const answer = document.querySelector('#topic-answer');
-  const answerText = answer.querySelector('p');
-  const answerAction = answer.querySelector('button');
+  const thread = document.querySelector('#chat-thread');
   const canned = {
-    dates: { title: 'Свободные даты', reply: 'Выберите даты и гостей. Посчитаем стоимость, а наличие уточнит администратор', action: 'Выбрать даты' },
-    rooms: { title: 'Номера', reply: 'Есть семейные номера, Комфорт+, Люкс и Президентский. Фото и цены — в каталоге', destination: 'rooms', action: 'Посмотреть номера' },
-    map: { title: 'Как добраться', reply: 'Мы у озера, в Листвянке на Партизанской, 1', destination: 'map', action: 'Открыть карту' },
-    gastro: { title: 'Завтрак', reply: 'Завтрак стоит 500 ₽ за гостя. Гастродом открыт с 10:00 до 22:00', destination: 'gastro', action: 'Посмотреть гастродом' },
+    dates: { title: 'Даты и цены', question: 'Как узнать стоимость на мои даты?',
+      reply: 'Выберите даты и гостей, чтобы рассчитать стоимость. Наличие номера подтвердит администратор',
+      action: 'Выбрать даты', match: /стоимост|цен[аыуе]|свободн.{0,8}(дат|номер)|как забронироват/ },
+    rooms: { title: 'Номера', question: 'Какие есть номера?',
+      reply: 'Есть Семейный, Семейный комфорт, Комфорт+, Люкс и Президентский',
+      destination: 'rooms', action: 'Посмотреть номера', match: /какие.{0,22}номер|категори|фото номер|^номера$/ },
+    map: { title: 'Как добраться', question: 'Как до вас добраться?',
+      reply: 'Мы у озера, на Партизанской, 1 в Листвянке',
+      destination: 'map', action: 'Открыть карту', match: /адрес|добрат|маршрут|где.{0,18}(вы|отель|находит)|карт[аеуы]/ },
+    breakfast: { title: 'Завтрак', question: 'Сколько стоит завтрак?',
+      reply: 'Завтрак стоит 500 ₽ за гостя', destination: 'gastro', action: 'Посмотреть гастродом',
+      match: /^(?:сколько стоит |какая цена |сколько за |есть ли |есть |платный |входит ли )?завтрак(?: у вас| в стоимость| платный)?[?! .]*$/ },
+    gastro: { title: 'Гастродом', question: 'Когда открыт гастродом?',
+      reply: 'Гастродом открыт с 10:00 до 22:00',
+      destination: 'gastro', action: 'Посмотреть гастродом', match: /^(?:(?:когда |во сколько |со скольки |до скольки |как )?(?:открыт |работает )?)?(?:гастродом|ресторан)(?: работает| открыт)?[?! .]*$/ },
   };
-  let directUrl = '';
-  let contactRequest;
+  const profileUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/;
 
   function go(id, instant = false) {
     const destination = document.getElementById(id);
@@ -31,43 +36,62 @@
       const response = await fetch('./hotel-contact.json');
       if (!response.ok) return;
       const contact = await response.json();
-      if (/^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(contact.chatUrl ?? '')) {
-        directUrl = contact.chatUrl;
-        direct.href = directUrl;
-        direct.hidden = false;
-      }
-      if (/^\+7\d{10}$/.test(contact.phone ?? '')) {
-        document.querySelector('#reception-phone').href = 'tel:' + contact.phone;
-      }
+      const url = profileUrl.test(contact.chatUrl ?? '') ? contact.chatUrl
+        : /^\+7\d{10}$/.test(contact.phone ?? '') ? 'tel:' + contact.phone : '';
+      if (url) for (const link of document.querySelectorAll('[data-reception]')) link.href = url;
     } catch {
-      contactRequest = undefined;
+      // The contact embedded in the page remains available.
     }
   }
 
-  function openInMax(url) {
-    if (window.WebApp?.platform && typeof window.WebApp.openMaxLink === 'function') {
-      try {
-        window.WebApp.openMaxLink(url);
-        return true;
-      } catch {
-        return false;
-      }
+  if (!profileUrl.test(receptionLink.href)) void loadContact();
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a[data-reception]');
+    if (!link || !profileUrl.test(link.href) || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const bridge = window.WebApp;
+    if (!bridge?.platform || bridge.platform === 'web' || typeof bridge.openMaxLink !== 'function') return;
+    try {
+      bridge.openMaxLink(link.href);
+      event.preventDefault();
+    } catch {
+      // The link can still be opened by the browser.
     }
-    return false;
+  });
+
+  function appendMessage(text, own = false) {
+    const bubble = document.createElement('div');
+    bubble.className = own ? 'chat-bubble chat-bubble--guest' : 'chat-bubble';
+    const content = document.createElement('p');
+    content.textContent = text;
+    bubble.append(content);
+    thread.append(bubble);
+    return bubble;
   }
 
-  direct.addEventListener('click', event => {
-    if (directUrl && openInMax(directUrl)) event.preventDefault();
-  });
-  fallback.addEventListener('click', event => {
-    if (openInMax(fallback.href)) event.preventDefault();
-  });
+  function reply(question, topic) {
+    appendMessage(question, true);
+    const response = appendMessage(topic?.reply ?? 'С этим поможет администратор. Открываю чат в MAX');
+    if (topic?.action) {
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'text-link';
+      action.textContent = topic.action;
+      action.addEventListener('click', () => {
+        chat.close();
+        if (topic.destination) go(topic.destination);
+        else openBooking();
+      });
+      response.append(action);
+    }
+    if (typeof thread.scrollTo === 'function') thread.scrollTo({ top: thread.scrollHeight, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+    else thread.scrollTop = thread.scrollHeight;
+    if (!topic) direct.click();
+  }
 
   for (const [key, topic] of Object.entries(canned)) {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.dataset.topic = key;
-    chip.setAttribute('aria-pressed', 'false');
     chip.textContent = topic.title;
     topics.append(chip);
   }
@@ -76,73 +100,29 @@
     const chip = event.target.closest('[data-topic]');
     if (!chip) return;
     const topic = canned[chip.dataset.topic];
-    const active = chip.getAttribute('aria-pressed') === 'true';
-    for (const button of topics.children) button.setAttribute('aria-pressed', String(button === chip && !active));
-    answer.hidden = active;
-    if (active) return;
-    answerText.textContent = topic.reply;
-    answerAction.textContent = topic.action;
-    answerAction.onclick = () => {
-      chat.close();
-      if (topic.destination) go(topic.destination);
-      else openBooking();
-    };
+    reply(topic.question, topic);
   });
 
   document.addEventListener('click', event => {
-    const button = event.target.closest('[data-help]');
-    if (!button) return;
-    if (button.closest('#booking')) document.querySelector('#booking').close();
-    if (button.dataset.help) draft.value = button.dataset.help;
-    status.textContent = '';
-    fallback.hidden = true;
-    chat.showModal();
-    contactRequest ??= loadContact();
+    const button = event.target.closest('button[data-help]');
+    if (button) chat.showModal();
   });
 
-  draft.addEventListener('input', () => {
-    status.textContent = '';
-    fallback.hidden = true;
-  });
+  function findTopic(question) {
+    const text = question.toLocaleLowerCase('ru-RU').replaceAll('ё', 'е');
+    if (text.length > 80 || /\d|аллерг|питом|собак|оплат|возврат|отмен|перенос|перенес|ранний|поздн|ребен|дет[иея]|скид|уже|с моей|мой заказ|сколько человек|вдвоем|втроем|на двоих|[?].+/.test(text)) return;
+    if (canned.breakfast.match.test(text)) return canned.breakfast;
+    if (canned.gastro.match.test(text)) return canned.gastro;
+    const matches = [canned.dates, canned.rooms, canned.map].filter(topic => topic.match.test(text));
+    if (matches.length === 1) return matches[0];
+  }
 
-  form.addEventListener('submit', async event => {
+  form.addEventListener('submit', event => {
     event.preventDefault();
-    const text = draft.value.trim();
-    if (!text) {
-      status.textContent = 'Напишите сообщение';
-      draft.focus();
-      return;
-    }
-    const bridge = window.WebApp;
-    const shareUrl = new URL('https://max.ru/:share');
-    shareUrl.searchParams.set('text', text);
-    fallback.href = shareUrl.href;
-    fallback.hidden = true;
-    status.textContent = 'Выберите чат администратора в MAX';
-    if (!bridge?.platform || typeof bridge.shareMaxContent !== 'function') {
-      if (!openInMax(shareUrl.href)) window.open(shareUrl.href, '_blank', 'noopener');
-      fallback.hidden = false;
-      return;
-    }
-
-    send.disabled = true;
-    try {
-      const result = await bridge.shareMaxContent({ text });
-      if (result?.status === 'shared') {
-        if (draft.value.trim() === text) draft.value = '';
-        status.textContent = 'Сообщение отправлено в выбранный чат';
-        if (directUrl) openInMax(directUrl);
-      } else if (result?.status === 'cancelled') {
-        status.textContent = 'Текст остался в черновике';
-      } else {
-        fallback.hidden = false;
-      }
-    } catch {
-      fallback.hidden = false;
-      status.textContent = 'Откройте отправку в MAX по ссылке ниже';
-    } finally {
-      send.disabled = false;
-    }
+    const question = draft.value.trim();
+    if (!question) return;
+    draft.value = '';
+    reply(question, findTopic(question));
   });
 
   let openedInitial = false;

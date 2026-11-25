@@ -22,7 +22,17 @@ jobs:
           BAIKAL_ADMIN_PHONE: ${{ vars.BAIKAL_ADMIN_PHONE }}
           BAIKAL_ADMIN_CHAT_URL: ${{ vars.BAIKAL_ADMIN_CHAT_URL }}
         run: |
-          node -e 'const fs = require("node:fs"); const fallback = JSON.parse(fs.readFileSync("dist/hotel-contact.json", "utf8")); const p = process.env.BAIKAL_ADMIN_PHONE; const c = process.env.BAIKAL_ADMIN_CHAT_URL; const phone = /^\+7\d{10}$/.test(p ?? "") ? p : fallback.phone; const chatUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(c ?? "") ? c : null; fs.writeFileSync("dist/hotel-contact.json", JSON.stringify({chatUrl, phone}) + "\n")'
+          node <<'NODE'
+          const fs = require('node:fs');
+          const fallback = JSON.parse(fs.readFileSync('dist/hotel-contact.json', 'utf8'));
+          const { BAIKAL_ADMIN_PHONE: p, BAIKAL_ADMIN_CHAT_URL: c } = process.env;
+          const phone = /^\+7\d{10}$/.test(p ?? '') ? p : fallback.phone;
+          const chatUrl = /^https:\/\/max\.ru\/u\/[A-Za-z0-9_-]+\/?$/.test(c ?? '') ? c : null;
+          fs.writeFileSync('dist/hotel-contact.json', JSON.stringify({ chatUrl, phone }) + '\n');
+          const page = fs.readFileSync('dist/index.html', 'utf8');
+          const href = chatUrl ?? 'tel:' + phone;
+          fs.writeFileSync('dist/index.html', page.replaceAll('data-reception href="tel:+79953235878"', 'data-reception href="' + href + '"'));
+          NODE
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

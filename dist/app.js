@@ -90,6 +90,7 @@ const { arrival, departure, room: bookingRoom, guests } = form.elements;
 const extraFields = document.querySelector('#extra-guest-fields');
 const estimate = document.querySelector('#estimate');
 const photoViewer = document.querySelector('#photo-viewer');
+const receptionLink = document.querySelector('#hotel-reception');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const icon = (name) => '<svg class="icon" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
 let selectedRoom = rooms[0];
@@ -122,12 +123,12 @@ function showRoom(room) {
     icon('back') + '</button><button type="button" class="icon-button" data-room-step="1" aria-label="Следующее фото номера">' +
     icon('next') + '</button></div></div></div>' +
     '<div class="room-card-text"><h3>' + room.name + '</h3>' +
-    (room.illustrative ? '<p class="photo-note">Фото интерьеров отеля</p>' : '') +
     '<ul class="room-facts">' + room.facts.map((fact) => '<li>' + fact + '</li>').join('') + '</ul>' +
     '<p class="room-note">' + room.note + '</p>' +
     '<dl class="room-prices"><div><dt>В будни</dt><dd>' + formatPrice(room.weekday) + '</dd></div>' +
     '<div><dt>В выходные</dt><dd>' + formatPrice(room.weekend) + '</dd></div></dl>' +
     '<details><summary>Что в номере и доплаты</summary>' + (room.description ? '<p>' + room.description + '</p>' : '') +
+    (room.illustrative ? '<p>В галерее показаны интерьеры отеля. Фото конкретного номера подскажет администратор</p>' : '') +
     '<p>' + room.amenities + '</p><p>Тариф на ' +
     room.base + ' гостей · ' + rate + '</p></details><button type="button" class="button primary" data-book>' +
     'Выбрать даты' + icon('arrow') + '</button></div></div>';
@@ -167,23 +168,51 @@ showRoom(selectedRoom);
 const floors = document.querySelector('#floor-tabs');
 const floorSelection = document.querySelector('#floor-selection');
 const roomNumbers = { 3: [3, 4, 5, 6, 7], 4: [8] };
-floors.addEventListener('click', event => {
-  const tab = event.target.closest('[data-floor]');
-  if (!tab) return;
+const floorTabs = [...floors.children];
+let activeFloor = 0;
+
+function selectFloor(tab) {
+  const nextFloor = floorTabs.indexOf(tab);
+  if (nextFloor === activeFloor) return;
+  const direction = nextFloor > activeFloor ? 1 : -1;
+  activeFloor = nextFloor;
   const value = tab.dataset.floor;
-  for (const t of floors.children) t.setAttribute('aria-pressed', String(t === tab));
+  floors.style.setProperty('--active-floor', activeFloor);
+  for (const t of floorTabs) t.setAttribute('aria-pressed', String(t === tab));
   floorSelection.hidden = value === 'all';
   if (floorSelection.hidden) return;
-  const matches = rooms.filter(room => room.floor === Number(value));
-  const buttons = matches.map(room => '<button type="button" class="button outline" data-floor-room="' +
-    room.id + '">' + room.name + '</button>');
-  if (matches.length === 0) {
-    for (const n of roomNumbers[value] || []) buttons.push('<button type="button" class="button outline" data-help="Здравствуйте! Подскажите категорию и фото номера № ' +
-      n + ' на ' + value + '-м этаже">№ ' + n + '</button>');
+  const room = rooms.find(room => room.floor === Number(value));
+  const numbers = roomNumbers[value] || [];
+  const admin = (label, ariaLabel = label) =>
+    '<a class="floor-chip" data-reception href="' + receptionLink.href +
+    '" target="_blank" rel="noopener" aria-label="' + ariaLabel + '">' + label + '</a>';
+  floorSelection.innerHTML = room
+    ? '<button type="button" class="floor-feature" data-floor-room="' + room.id +
+      '"><img src="photos/' + room.images[0] + '" alt="" width="75" height="55" decoding="async">' +
+      '<span><strong>' + room.name + '</strong><small>от ' + formatPrice(room.weekday) + ' за ночь</small></span>' + icon('next') + '</button>'
+    : '<div class="floor-options"><p>' + (numbers.length ? 'Спросить о номере на ' + value + '-м этаже' :
+      'Номера ' + value + '-го этажа уточнит администратор') + '</p><div>' +
+      (numbers.length ? numbers.map(number => admin('№ ' + number, 'Спросить про номер № ' + number)).join('') : admin('Написать')) +
+      '<button type="button" class="floor-chip" data-room-catalog>Все категории</button></div></div>';
+  if (!reducedMotion.matches) {
+    floorSelection.firstElementChild.animate?.([
+      { opacity: .45, transform: 'translateX(' + direction * 15 + 'px)' },
+      { opacity: 1, transform: 'translateX(0)' },
+    ], { duration: 280, easing: 'cubic-bezier(.2,.75,.22,1)' });
   }
-  floorSelection.innerHTML = '<p>' + value + ' этаж' +
-    (matches.length === 0 ? ' · категории уточняются' : '') + '</p>' + buttons.join('') +
-    (matches.length ? '' : '<button type="button" class="button outline" data-room-catalog>Все категории</button>');
+}
+floors.addEventListener('click', event => {
+  const tab = event.target.closest('[data-floor]');
+  if (tab) selectFloor(tab);
+});
+floors.addEventListener('keydown', event => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  const index = floorTabs.indexOf(event.target);
+  if (index < 0) return;
+  event.preventDefault();
+  const tab = floorTabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + floorTabs.length) % floorTabs.length];
+  tab.focus();
+  selectFloor(tab);
 });
 floorSelection.addEventListener('click', event => {
   const button = event.target.closest('button');
@@ -204,7 +233,7 @@ function showMorePhotos() {
   const start = gallery.childElementCount;
   gallery.insertAdjacentHTML('beforeend', galleryPhotos.slice(start, start + 7).map(([file, caption], index) =>
     '<button class="gallery-item" type="button" data-photo="' + (start + index) + '" aria-label="Открыть фото: ' +
-    caption + '"><img src="photos/' + file + '" alt="" loading="lazy" decoding="async"><span>' + caption + '</span></button>'
+    caption + '"><img src="photos/' + file + '" alt="" loading="lazy" decoding="async"></button>'
   ).join(''));
   if (start > 0 && gallery.childElementCount > start) gallery.children[start].focus({ preventScroll: true });
   morePhotos.hidden = gallery.childElementCount === galleryPhotos.length;
@@ -235,7 +264,6 @@ function showPhoto(index) {
   const image = document.querySelector('#viewer-image');
   image.src = 'photos/' + file;
   image.alt = caption;
-  document.querySelector('#viewer-caption').textContent = caption;
   document.querySelector('#viewer-count').textContent = (photoIndex + 1) + ' / ' + viewedPhotos.length;
   const frame = photoViewer.querySelector('figure');
   frame.style.setProperty('--photo-enter', direction);
@@ -283,9 +311,9 @@ onHorizontalSwipe(roomDetail, direction => showRoomPhoto(roomPhotoIndex + direct
 const sceneTabs = document.querySelector('#scene-tabs');
 const sceneMedia = document.querySelector('#hero-media');
 const scenes = [
-  { caption: 'Отель зимой', image: sceneMedia.firstElementChild },
-  { caption: 'Вид на Байкал', alt: 'Байкал и горы с балкона отеля', file: 'roof-balcony.webp', position: '47%' },
-  { caption: 'Ресепшен', alt: 'Ресепшен отеля с лестницей и панорамными окнами', file: 'lobby.webp', position: '44%' },
+  { image: sceneMedia.firstElementChild },
+  { alt: 'Байкал и горы с балкона отеля', file: 'roof-balcony.webp', position: '47%' },
+  { alt: 'Ресепшен отеля с лестницей и панорамными окнами', file: 'lobby.webp', position: '44%' },
 ];
 let currentScene = 0;
 let requestedScene = 0;
@@ -312,7 +340,6 @@ async function showScene(index) {
   scene.image.classList.add('is-active');
   currentScene = index;
   for (const tab of sceneTabs.children) tab.setAttribute('aria-pressed', String(Number(tab.dataset.scene) === index));
-  document.querySelector('#scene-caption').textContent = scene.caption;
 }
 sceneTabs.addEventListener('click', event => {
   const tab = event.target.closest('[data-scene]');
@@ -422,15 +449,7 @@ form.addEventListener('submit', async (event) => {
   } else {
     text.textContent = 'Предварительная стоимость' + (extraDaily ? ' с доплатой за гостей' : '') + ' · наличие уточнит отель';
   }
-  const write = document.createElement('button');
-  write.className = 'mini-link';
-  write.type = 'button';
-  write.textContent = 'Написать о брони';
-  const stayDate = new Intl.DateTimeFormat('ru-RU', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
-  write.dataset.help = 'Здравствуйте! Подскажите, свободен ли номер «' + room.name + '» с ' +
-    stayDate.format(Date.parse(query.get('arrival'))) + ' по ' + stayDate.format(Date.parse(query.get('departure'))) +
-    '. Гостей: ' + guestsCount;
-  estimate.replaceChildren(price, text, write);
+  estimate.replaceChildren(price, text);
 });
 
 document.addEventListener('click', (event) => {
