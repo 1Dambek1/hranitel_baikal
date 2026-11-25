@@ -12,13 +12,21 @@ function normalizeCategory(value) {
 }
 
 function ecviSettings(env) {
-  if (!env.ECVI_HOTEL_ID?.trim() || !env.ECVI_HOTEL_TOKEN?.trim() || !env.ECVI_PMS_BASE_URL) return null;
+  const hotelId = env.ECVI_HOTEL_ID?.trim();
+  if (!hotelId || !env.ECVI_PMS_BASE_URL) return null;
   try {
     const base = new URL(env.ECVI_PMS_BASE_URL);
     if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash ||
         !base.pathname.replace(/\/+$/, '').endsWith('/pmsapi')) return null;
     base.pathname = base.pathname.replace(/\/+$/, '') + '/';
-    return { base, hotelId: env.ECVI_HOTEL_ID.trim(), token: env.ECVI_HOTEL_TOKEN.trim() };
+    const token = env.ECVI_HOTEL_TOKEN?.trim();
+    if (token) return { base, hotelId, authorization: { 'Hotel-Token': token } };
+    const username = env.ECVI_PMS_USERNAME;
+    const password = env.ECVI_PMS_PASSWORD;
+    if (!username || username.includes(':') || !password) return null;
+    const credentials = new TextEncoder().encode(username + ':' + password);
+    const basic = btoa(Array.from(credentials, byte => String.fromCharCode(byte)).join(''));
+    return { base, hotelId, authorization: { Authorization: 'Basic ' + basic } };
   } catch {
     return null;
   }
@@ -28,7 +36,7 @@ async function readEcvi(path, filter, settings, signal) {
   const url = new URL(path, settings.base);
   url.search = new URLSearchParams({ HotelID: settings.hotelId, ...filter });
   const response = await fetch(url, {
-    headers: { 'Hotel-Token': settings.token, Accept: 'application/json' },
+    headers: { ...settings.authorization, Accept: 'application/json' },
     signal,
     redirect: 'manual',
   });

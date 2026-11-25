@@ -258,7 +258,7 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   .header-row nav { display: none; }
 }
 @media (max-width: 680px) {
-  :root { --edge: 16px; }
+  :root { --edge: 16px; --paper: #fff; --white: #fff; --sage: #f2f6f3; --border: #dfe7e1; }
   .site-header { background: var(--white); color: var(--forest); border-bottom: 1px solid var(--border); }
   .header-row { min-height: 56px; }
   .brand { gap: 6px; }
@@ -272,8 +272,9 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   .hero h1 { font-size: clamp(57px, 15vw, 84px); margin-bottom: 13px; }
   .hero p { margin-bottom: 16px; }
   .hero-controls { bottom: 9px; left: 0; }
+  .floor-panel { background: var(--white); border-color: var(--border); }
   .floor-row { align-items: start; flex-direction: column; gap: 8px; }
-  .floor-tabs { width: 100%; background: #e0e7dd; box-shadow: inset 0 0 0 1px #d4decf; }
+  .floor-tabs { width: 100%; background: #f3f6f3; box-shadow: inset 0 0 0 1px var(--border); }
   .floor-tabs::before { background: #efd6ae; box-shadow: 0 1px 4px #45341822; }
   .floor-tabs button { color: var(--forest); }
   .floor-tabs button:focus-visible { outline-color: #496654; }
@@ -283,17 +284,19 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   .room-card { grid-template-columns: minmax(0, 1fr); border-radius: 19px; }
   .room-visual { min-height: 0; aspect-ratio: 1.18; }
   .room-card-text { padding: 14px 15px 16px; }
+  .hotel-story { background: var(--white); border-block: 1px solid var(--border); }
   .story-inner { grid-template-columns: minmax(0, 1fr); }
   .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
   .gallery-item { border-radius: 13px; }
   .gallery-item:first-child { grid-column: span 2; aspect-ratio: 1.77; }
   .events { grid-template-columns: minmax(0,1fr); }
-  .site-footer { background: #e7ede3; color: var(--forest); border-top: 1px solid #d5dfd2; }
+  .site-footer { background: var(--white); color: var(--forest); border-top: 1px solid var(--border); }
   .footer-inner p { color: var(--muted); }
   .footer-chat { color: #345a48; }
   dialog::backdrop { background: #233b365f; }
   .photo-dialog { background: var(--white); color: var(--forest); }
   .photo-dialog .icon-button { background: var(--sage); color: var(--forest); }
+  .chat-thread { background: #f4f7f5; }
   .sheet { width: min(100%, 490px); max-width: 100%; max-height: calc(100% - 12px); max-height: calc(100dvh - 12px); margin: auto auto 0; border-radius: 23px 23px 0 0; padding: 18px 16px max(16px, env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 355px) {
