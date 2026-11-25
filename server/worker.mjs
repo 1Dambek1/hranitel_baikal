@@ -26,7 +26,9 @@ export default {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
     }
-    if (pathname === '/api/availability' && request.method === 'GET') return checkEcviAvailability(requestUrl, env);
+    if (pathname === '/api/availability' && request.method === 'GET') {
+      return checkEcviAvailability(requestUrl, env, request.headers.get('Origin'));
+    }
     if (pathname === '/hotel-contact.json') {
       const phone = /^\+7\d{10}$/.test(env.MAX_ADMIN_PHONE ?? '') ? env.MAX_ADMIN_PHONE : '+79953235878';
       return Response.json({ chatUrl: adminContact(env), phone }, { headers: { 'Cache-Control': 'no-store' } });
@@ -38,7 +40,13 @@ export default {
       'Cache-Control': path.startsWith('/photos/') ? 'public, max-age=86400' : 'no-cache',
       'X-Content-Type-Options': 'nosniff',
     };
-    const body = request.method === 'HEAD' ? null : Uint8Array.from(atob(embeddedFiles[path]), char => char.charCodeAt(0));
+    let body = request.method === 'HEAD' ? null : Uint8Array.from(atob(embeddedFiles[path]), char => char.charCodeAt(0));
+    if (path === '/index.html' && body && ecviSettings(env)) {
+      body = new TextDecoder().decode(body).replace(
+        'name="baikal-availability-url" content=""',
+        'name="baikal-availability-url" content="./api/availability"',
+      );
+    }
     return new Response(body, { headers });
   },
 };

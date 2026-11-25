@@ -5,6 +5,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "node server/build.mjs",
-    "start": "node server/http.mjs"
+    "start": "node server/http.mjs",
+    "iiko:check": "node server/iiko-check.mjs --check"
   }
 }

@@ -16,7 +16,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: only light;
   --paper: #f7f4ed;
   --white: #fffdf8;
   --forest: #172c29;
@@ -259,20 +259,24 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
 }
 @media (max-width: 680px) {
   :root { --edge: 16px; }
+  .site-header { background: var(--white); color: var(--forest); border-bottom: 1px solid var(--border); }
   .header-row { min-height: 56px; }
   .brand { gap: 6px; }
   .brand-mark { width: 32px; height: 32px; }
-  .header-chat { min-height: 42px; padding-inline: 9px; }
-  .header-controls .icon-button { width: 36px; height: 40px; }
+  .header-chat { min-height: 42px; padding-inline: 9px; color: var(--forest); background: var(--sage); border-color: #dbe3d7; }
+  .header-controls .icon-button { width: 36px; height: 40px; color: var(--forest); background: var(--sage); }
   .hero { min-height: clamp(379px, 62svh, 515px); }
   .hero-media { inset: 0; }
-  .hero::before { background: linear-gradient(0deg, #111f1de8 0%, #142522b0 27%, #13232045 57%, #1323200d 86%); }
+  .hero::before { background: linear-gradient(0deg, #111f1ddd 0%, #142522a8 27%, #1323202e 61%, transparent 86%); }
   .hero-inner { align-items: end; padding-block: 65px 74px; }
   .hero h1 { font-size: clamp(57px, 15vw, 84px); margin-bottom: 13px; }
   .hero p { margin-bottom: 16px; }
   .hero-controls { bottom: 9px; left: 0; }
   .floor-row { align-items: start; flex-direction: column; gap: 8px; }
-  .floor-tabs { width: 100%; }
+  .floor-tabs { width: 100%; background: #e0e7dd; box-shadow: inset 0 0 0 1px #d4decf; }
+  .floor-tabs::before { background: #efd6ae; box-shadow: 0 1px 4px #45341822; }
+  .floor-tabs button { color: var(--forest); }
+  .floor-tabs button:focus-visible { outline-color: #496654; }
   .section-heading { display: block; }
   .section-heading p { margin-top: 5px; }
   .room-selector { margin-inline: calc(-1 * var(--edge)); padding-inline: var(--edge); scroll-padding-inline: var(--edge); }
@@ -284,6 +288,12 @@ dialog::backdrop { background: #101f1bd0; animation: fade-in .22s var(--ease) bo
   .gallery-item { border-radius: 13px; }
   .gallery-item:first-child { grid-column: span 2; aspect-ratio: 1.77; }
   .events { grid-template-columns: minmax(0,1fr); }
+  .site-footer { background: #e7ede3; color: var(--forest); border-top: 1px solid #d5dfd2; }
+  .footer-inner p { color: var(--muted); }
+  .footer-chat { color: #345a48; }
+  dialog::backdrop { background: #233b365f; }
+  .photo-dialog { background: var(--white); color: var(--forest); }
+  .photo-dialog .icon-button { background: var(--sage); color: var(--forest); }
   .sheet { width: min(100%, 490px); max-width: 100%; max-height: calc(100% - 12px); max-height: calc(100dvh - 12px); margin: auto auto 0; border-radius: 23px 23px 0 0; padding: 18px 16px max(16px, env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 355px) {

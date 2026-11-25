@@ -17,10 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Apply the guest-facing reception contact
+      - name: Apply the public mini-app settings
         env:
           BAIKAL_ADMIN_PHONE: ${{ vars.BAIKAL_ADMIN_PHONE }}
           BAIKAL_ADMIN_CHAT_URL: ${{ vars.BAIKAL_ADMIN_CHAT_URL }}
+          BAIKAL_API_ORIGIN: ${{ vars.BAIKAL_API_ORIGIN }}
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -31,7 +32,17 @@ jobs:
           fs.writeFileSync('dist/hotel-contact.json', JSON.stringify({ chatUrl, phone }) + '\n');
           const page = fs.readFileSync('dist/index.html', 'utf8');
           const href = chatUrl ?? 'tel:' + phone;
-          fs.writeFileSync('dist/index.html', page.replaceAll('data-reception href="tel:+79953235878"', 'data-reception href="' + href + '"'));
+          let availabilityUrl = '';
+          if (process.env.BAIKAL_API_ORIGIN) {
+            const api = new URL(process.env.BAIKAL_API_ORIGIN);
+            if (api.protocol !== 'https:' || api.username || api.password || api.pathname !== '/' || api.search || api.hash) {
+              throw new Error('BAIKAL_API_ORIGIN must be an HTTPS origin');
+            }
+            availabilityUrl = api.origin + '/api/availability';
+          }
+          fs.writeFileSync('dist/index.html', page
+            .replaceAll('data-reception href="tel:+79953235878"', 'data-reception href="' + href + '"')
+            .replace('name="baikal-availability-url" content=""', 'name="baikal-availability-url" content="' + availabilityUrl + '"'));
           NODE
       - uses: actions/upload-pages-artifact@v5
         with:

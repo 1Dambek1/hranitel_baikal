@@ -79,7 +79,7 @@ const equipment = [
 ];
 
 const currency = new Intl.NumberFormat('ru-RU', {
-  style: 'currency', currency: 'RUB', maximumFractionDigits: 0,
+  style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 2,
 });
 const formatPrice = (value) => currency.format(value);
 const roomOptions = document.querySelector('#room-options');
@@ -89,6 +89,8 @@ const form = document.querySelector('#booking-form');
 const { arrival, departure, room: bookingRoom, guests } = form.elements;
 const extraFields = document.querySelector('#extra-guest-fields');
 const estimate = document.querySelector('#estimate');
+const availabilityUrl = document.querySelector('meta[name="baikal-availability-url"]').content;
+if (availabilityUrl) document.querySelector('#booking-submit').firstChild.nodeValue = 'Проверить даты ';
 const photoViewer = document.querySelector('#photo-viewer');
 const receptionLink = document.querySelector('#hotel-reception');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -420,21 +422,9 @@ form.addEventListener('submit', async (event) => {
     return;
   }
   const query = new URLSearchParams({ room: room.id, arrival: arrival.value, departure: departure.value });
+  if (guestsCount <= room.base) query.set('adults', guestsCount);
   const extraDaily = room.extra ? Math.max(0, guestsCount - room.base) * room.extra :
     [...extraFields.querySelectorAll('select')].reduce((sum, input) => sum + Number(input.value), 0);
-  const request = new AbortController();
-  availabilityRequest = request;
-  let availability;
-  if (!location.hostname.endsWith('.github.io')) {
-    estimate.textContent = 'Проверяем даты';
-    try {
-      const response = await fetch('./api/availability?' + query, { signal: request.signal });
-      if (response.ok) availability = await response.json();
-    } catch {
-      if (request.signal.aborted) return;
-    }
-  }
-  if (request.signal.aborted) return;
   let lodging = 0;
   for (let offset = 0; offset < nights; offset++) {
     const day = new Date(Date.parse(query.get('arrival')) + offset * oneDay).getUTCDay();
@@ -443,13 +433,43 @@ form.addEventListener('submit', async (event) => {
   const price = document.createElement('strong');
   price.textContent = formatPrice(lodging + extraDaily * nights) + ' · ночей: ' + nights;
   const text = document.createElement('p');
-  if (availability?.status === 'live' && Number.isInteger(availability.available)) {
-    text.textContent = availability.available === 0 ? 'На эти даты нет свободных номеров этой категории' :
-      'Свободных номеров этой категории: ' + availability.available + ' · условия размещения подтвердит отель';
-  } else {
-    text.textContent = 'Предварительная стоимость' + (extraDaily ? ' с доплатой за гостей' : '') + ' · наличие уточнит отель';
-  }
+  const preliminary = 'Предварительная стоимость' + (extraDaily ? ' с доплатой за гостей' : '');
+  const fallback = preliminary + ' · наличие уточнит отель';
+  text.textContent = availabilityUrl ? preliminary + ' · проверяем наличие' : fallback;
   estimate.replaceChildren(price, text);
+  if (!availabilityUrl) return;
+
+  const request = new AbortController();
+  availabilityRequest = request;
+  let availability;
+  try {
+    const url = new URL(availabilityUrl, location.href);
+    url.search = query.toString();
+    const signal = typeof AbortSignal.any === 'function'
+      ? AbortSignal.any([request.signal, AbortSignal.timeout(7500)]) : request.signal;
+    const response = await fetch(url, { signal, credentials: 'omit', redirect: 'error' });
+    if (response.ok) availability = await response.json();
+  } catch {
+    // An unavailable PMS leaves the local estimate and reception link usable.
+  }
+  if (request.signal.aborted) return;
+  if (availability?.status !== 'live' || !Number.isSafeInteger(availability.available) || availability.available < 0) {
+    text.textContent = fallback;
+    return;
+  }
+  if (availability.available === 0) {
+    price.hidden = true;
+    text.textContent = 'На эти даты нет свободных номеров этой категории';
+    return;
+  }
+  const quote = availability.quote;
+  const available = 'Свободных номеров по данным ECVI: ' + availability.available;
+  if (quote?.adults === guestsCount && typeof quote.amount === 'number' && Number.isFinite(quote.amount) && quote.amount > 0) {
+    price.textContent = formatPrice(quote.amount) + ' · ночей: ' + nights;
+    text.textContent = available + ' · тариф за проживание взрослых';
+  } else {
+    text.textContent = available + ' · стоимость предварительная';
+  }
 });
 
 document.addEventListener('click', (event) => {
