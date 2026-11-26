@@ -13,9 +13,9 @@
   <link rel="preload" as="image" href="photos/winter-cover.webp" imagesrcset="photos/winter-mobile.webp 640w, photos/winter-cover.webp 1024w" imagesizes="(max-width: 680px) 100vw, 60vw">
   <link rel="preload" as="font" href="fonts/cormorant-cyr.woff2" type="font/woff2" crossorigin>
   <link rel="icon" href="photos/brand.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=20">
   <script src="https://st.max.ru/js/max-web-app.js" async></script>
-  <script src="app.js?v=19" defer></script>
+  <script src="app.js?v=20" defer></script>
   <script src="room-directory.js?v=18" defer></script>
   <script src="concierge.js?v=17" defer></script>
 </head>
@@ -70,20 +70,27 @@
 
     <section class="floor-panel" aria-labelledby="floor-title">
       <div class="section floor-inner">
-        <div class="floor-row">
-          <div class="floor-intro">
+        <div id="floor-tabs">
+          <div class="floor-row">
             <div class="floor-heading"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><h2 id="floor-title">Этажи Байкала</h2></div>
-            <button class="floor-lift" id="elevator-photo" type="button" aria-label="Открыть фото лифта" aria-haspopup="dialog">
-              <img src="photos/elevator.webp" alt="" width="30" height="30" loading="lazy" decoding="async">Лифт
-            </button>
+            <button class="floor-all" type="button" data-floor="all" aria-pressed="true" aria-controls="floor-selection">Все этажи</button>
           </div>
-          <div id="floor-tabs" class="floor-tabs" aria-label="Этажи отеля">
-            <button type="button" data-floor="all" aria-pressed="true">Все</button>
-            <button type="button" data-floor="1" aria-pressed="false" aria-label="1 этаж">1</button>
-            <button type="button" data-floor="2" aria-pressed="false" aria-label="2 этаж">2</button>
-            <button type="button" data-floor="3" aria-pressed="false" aria-label="3 этаж">3</button>
-            <button type="button" data-floor="4" aria-pressed="false" aria-label="4 этаж">4</button>
-            <button type="button" data-floor="5" aria-pressed="false" aria-label="5 этаж">5</button>
+          <div class="floor-tabs">
+            <button type="button" data-floor="1" aria-pressed="false" aria-label="1 этаж · Гастродом" aria-controls="floor-selection">
+              <img src="photos/dining.webp" alt="" loading="lazy" decoding="async"><span>1</span>
+            </button>
+            <button type="button" data-floor="2" aria-pressed="false" aria-label="2 этаж" aria-controls="floor-selection">
+              <img src="photos/lobby-staircase.webp" alt="" loading="lazy" decoding="async"><span>2</span>
+            </button>
+            <button type="button" data-floor="3" aria-pressed="false" aria-label="3 этаж" aria-controls="floor-selection">
+              <img src="photos/sunlit-bedroom.webp" alt="" loading="lazy" decoding="async"><span>3</span>
+            </button>
+            <button type="button" data-floor="4" aria-pressed="false" aria-label="4 этаж" aria-controls="floor-selection">
+              <img src="photos/lake-window.webp" alt="" loading="lazy" decoding="async"><span>4</span>
+            </button>
+            <button type="button" data-floor="5" aria-pressed="false" aria-label="5 этаж" aria-controls="floor-selection">
+              <img src="photos/presidential-view.webp" alt="" loading="lazy" decoding="async"><span>5</span>
+            </button>
           </div>
         </div>
         <div id="floor-selection" class="floor-selection" aria-live="polite" hidden></div>
