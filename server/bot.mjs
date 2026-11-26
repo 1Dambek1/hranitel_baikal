@@ -34,10 +34,12 @@ function listRooms(forBooking) {
 }
 
 function showRoom(room) {
+  const rate = room.extra ? 'Дополнительное место — ' + money.format(room.extra) + '/сутки' : ageBasedExtraGuestRates;
   return card(
     '**' + room.name + '**\n' + room.facts.join(' · ') + '\n\nВ будни — ' + money.format(room.weekday) +
-    ' за сутки\nВ выходные — ' + money.format(room.weekend) + ' за сутки\n\n' + room.note + '\nЗавтрак — 500 ₽ за гостя.',
-    [[key('Выбрать даты', 'book:' + room.id)], [key('Все номера', 'rooms')], homeRow]
+    ' за сутки\nВ выходные — ' + money.format(room.weekend) + ' за сутки\n\n' + room.note +
+    '\n\nТариф на ' + room.base + ' гостей · до ' + room.max + ' гостей в номере\n' + rate + '\nЗавтрак — 500 ₽ за гостя',
+    [[key('Выбрать даты', 'book:' + room.id)], [key('Все номера', 'rooms')], appRow, homeRow]
   );
 }
 

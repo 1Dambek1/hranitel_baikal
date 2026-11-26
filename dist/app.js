@@ -1,12 +1,12 @@
 const rooms = [
   { id: 'family', name: 'Семейный', weekday: 6100, weekend: 6500, base: 3, max: 6, extra: 1500,
     facts: ['35 м²', 'До 6 гостей', 'Лес'],
-    note: 'Две комнаты, три кровати 140 × 200 см, без балкона',
+    note: 'Две комнаты с видом на лес, три кровати 140 × 200 см, без балкона',
     amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник, чайные пары и питьевая вода',
     images: ['family-beds.webp', 'family-rooms.webp', 'family-interior.webp'] },
   { id: 'family-comfort', name: 'Семейный комфорт', weekday: 8100, weekend: 8800,
     base: 3, max: 6, extra: 1500, facts: ['40 м²', 'До 6 гостей', 'Балкон'],
-    note: 'Вид на Байкал и лес, большая ванна, обеденный стол на четверых',
+    note: 'Собственный балкон с видом на Байкал и лес, большая ванна и стол на четверых',
     amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности и чайные пары',
     images: ['spacious-bedroom.webp', 'seating-bedroom.webp', 'large-bath.webp'], illustrative: true },
   { id: 'comfort', name: 'Комфорт+', weekday: 8100, weekend: 8800, base: 2, max: 3,
@@ -16,16 +16,19 @@ const rooms = [
     images: ['sunlit-bedroom.webp', 'window-seats.webp', 'balcony-lounge.webp'], illustrative: true },
   { id: 'suite', name: 'Люкс', weekday: 8950, weekend: 9500, base: 2, max: 3,
     facts: ['40 м²', 'Две комнаты', '5 окон на Байкал'],
-    note: 'Спальня и гостиная, два выхода на балкон, варианты с джакузи или душевой',
+    note: 'Из спальни и гостиной есть выходы на просторный балкон',
+    description: 'Пять панорамных окон с видом на Байкал. На выбор — номер с джакузи или с душевой',
     amenities: 'Халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
     images: ['suite-bed.webp', 'suite-lounge.webp', 'suite-bath.webp'], illustrative: true },
   { id: 'presidential', name: 'Президентский', weekday: 17400, weekend: 18900, base: 2, max: 4, floor: 5,
     facts: ['46 м²', 'До 4 гостей', '5 этаж'],
-    note: 'Пять панорамных окон, большой балкон, джакузи и отдельная душевая',
-    description: 'В гостиной кожаный диван, кресло, обеденный стол на четверых и туалетный столик. Есть отдельная прихожая и шкаф',
+    note: 'Пять панорамных окон, большой балкон и ванная с видом на Байкал',
+    description: 'В ванной — джакузи, отдельная душевая и вид на лес. В номере есть кожаный диван и кресло, обеденный стол на четверых, туалетный столик с зеркалом, вместительный шкаф и отдельная прихожая',
     amenities: 'Мини-бар, халаты, тапочки, полотенца, гигиенические принадлежности, телевизор, чайник и чайные пары',
     images: ['presidential-bed.webp', 'presidential-view.webp', 'presidential-lounge.webp', 'presidential-bath.webp'] },
 ];
+
+const ageBasedExtraGuestRates = 'До 7 лет на кровати с родителями — бесплатно · 7–14 лет — 1 500 ₽/сутки · старше 14 лет — 2 500 ₽/сутки за гостя';
 
 const photos = [
   ['exterior.webp', 'Отель у Байкала'],
@@ -124,8 +127,7 @@ function showRoom(room) {
     if (active) roomOptions.scrollTo?.({ left: option.offsetLeft - roomOptions.firstElementChild.offsetLeft,
       behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   }
-  const rate = room.extra ? 'Дополнительное место — 1 500 ₽/сутки' :
-    'До 7 лет на кровати с родителями — бесплатно · 7–14 лет — 1 500 ₽/сутки · старше 14 лет — 2 500 ₽/сутки';
+  const rate = room.extra ? 'Дополнительное место — ' + formatPrice(room.extra) + '/сутки' : ageBasedExtraGuestRates;
   roomDetail.innerHTML =
     '<div class="room-card"><div class="room-visual">' +
     '<button class="room-image" type="button" data-room-photo aria-label="Увеличить фото номера"></button>' +
@@ -140,8 +142,8 @@ function showRoom(room) {
     '<div><dt>В выходные</dt><dd>' + formatPrice(room.weekend) + '</dd></div></dl>' +
     '<details><summary>Что в номере и доплаты</summary>' + (room.description ? '<p>' + room.description + '</p>' : '') +
     (room.illustrative ? '<p>В галерее показаны интерьеры отеля. Фото конкретного номера подскажет администратор</p>' : '') +
-    '<p>' + room.amenities + '</p><p>Тариф на ' +
-    room.base + ' гостей · ' + rate + '</p></details><button type="button" class="button primary" data-book>' +
+    '<p>' + room.amenities + '</p><p>Тариф на ' + room.base + ' гостей · до ' + room.max +
+    ' гостей в номере</p><p>' + rate + '</p></details><button type="button" class="button primary" data-book>' +
     'Выбрать даты' + icon('arrow') + '</button></div></div>';
   showRoomPhoto(0);
 }
