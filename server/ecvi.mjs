@@ -11,25 +11,32 @@ function normalizeCategory(value) {
   return String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('ru');
 }
 
-function ecviSettings(env) {
+function ecviSettings(env, external = false) {
   const hotelId = env.ECVI_HOTEL_ID?.trim();
-  if (!hotelId || !env.ECVI_PMS_BASE_URL) return null;
+  const prefix = external ? 'ECVI_EXT_PMS' : 'ECVI_PMS';
+  const baseUrl = env[prefix + '_BASE_URL'];
+  if (!hotelId || !baseUrl) return null;
   try {
-    const base = new URL(env.ECVI_PMS_BASE_URL);
+    const base = new URL(baseUrl);
+    const apiPath = external ? '/extpmsapi' : '/pmsapi';
     if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash ||
-        !base.pathname.replace(/\/+$/, '').endsWith('/pmsapi')) return null;
+        !base.pathname.replace(/\/+$/, '').endsWith(apiPath)) return null;
     base.pathname = base.pathname.replace(/\/+$/, '') + '/';
-    const token = env.ECVI_HOTEL_TOKEN?.trim();
-    if (token) return { base, hotelId, authorization: { 'Hotel-Token': token } };
-    const username = env.ECVI_PMS_USERNAME;
-    const password = env.ECVI_PMS_PASSWORD;
+    const token = (external ? env.ECVI_EXT_PMS_HOTEL_TOKEN : env.ECVI_HOTEL_TOKEN)?.trim();
+    if (token) return { base, hotelId, external, authorization: { 'Hotel-Token': token } };
+    const username = env[prefix + '_USERNAME'];
+    const password = env[prefix + '_PASSWORD'];
     if (!username || username.includes(':') || !password) return null;
     const credentials = new TextEncoder().encode(username + ':' + password);
     const basic = btoa(Array.from(credentials, byte => String.fromCharCode(byte)).join(''));
-    return { base, hotelId, authorization: { Authorization: 'Basic ' + basic } };
+    return { base, hotelId, external, authorization: { Authorization: 'Basic ' + basic } };
   } catch {
     return null;
   }
+}
+
+function ecviAvailabilitySettings(env) {
+  return ecviSettings(env) ?? ecviSettings(env, true);
 }
 
 async function requestEcvi(path, filter, settings, signal) {
@@ -123,20 +130,21 @@ async function checkEcviAvailability(requestUrl, env, origin) {
       (query.has('adults') && (!Number.isInteger(adults) || adults < 1 || adults > (all ? 3 : room.base)))) {
     return respond('invalid_dates_or_category', {}, 400);
   }
-  const settings = ecviSettings(env);
+  const settings = ecviAvailabilitySettings(env);
   if (!settings) return respond('not_configured');
 
   const signal = AbortSignal.timeout(6500);
   try {
     let segment = env.ECVI_SEGMENT_ID?.trim();
     if (!segment) {
+      if (settings.external) return respond('segment_unmapped');
       const segments = await readEcvi('segments', {}, settings, signal);
       if (!segments) return respond('source_unavailable');
       if (segments.length !== 1 || !segments[0]?.SegmentID) return respond('segment_unmapped');
       segment = String(segments[0].SegmentID);
     }
     const categories = (all ? rooms : [room]).map(item => ({ item, typeId: configuredRoomType(item, env) }));
-    if (categories.some(category => !category.typeId)) {
+    if (!settings.external && categories.some(category => !category.typeId)) {
       const types = await readEcvi('resourcetypes', { SegmentID: segment }, settings, signal);
       if (!types) return respond('source_unavailable');
       for (const category of categories) category.typeId ||= matchEcviRoomType(category.item, types);
@@ -162,8 +170,8 @@ async function checkEcviAvailability(requestUrl, env, origin) {
   }
 }
 
-export async function diagnoseEcvi(env, dates = []) {
-  const settings = ecviSettings(env);
+export async function diagnoseEcvi(env, dates = [], external = false) {
+  const settings = external ? ecviSettings(env, true) : ecviAvailabilitySettings(env);
   if (!settings) return { status: 'not_configured' };
   const today = parseCalendar(dateInListvyanka.format(new Date()));
   const arrival = dates[0] ?? new Date(today + overnight).toISOString().slice(0, 10);
@@ -185,10 +193,21 @@ export async function diagnoseEcvi(env, dates = []) {
     }
   }
 
-  const segments = await inspect('segments', {});
+  const segments = settings.external ? null : await inspect('segments', {});
   const segment = env.ECVI_SEGMENT_ID?.trim() || (segments?.length === 1 && segments[0]?.SegmentID);
-  if (!segment) return { status: segments ? 'segment_unmapped' : 'source_unavailable', checks };
+  if (!segment) return { status: segments || settings.external ? 'segment_unmapped' : 'source_unavailable', checks };
   const filter = ecviStayFilter(String(segment), arrival, departure);
+  if (settings.external) {
+    const offers = await inspect('avaliable_resourcetypes', filter);
+    const offeredTypes = [...new Set((offers ?? []).flatMap(row => {
+      const id = row?.ResourceTypeID;
+      const numericString = typeof id === 'string' && /^\d+$/.test(id);
+      return numericString || Number.isSafeInteger(id) ? [String(id)] : [];
+    }))];
+    const mapping = Object.fromEntries(rooms.map(room => [room.id, configuredRoomType(room, env) ?? null]));
+    return { status: offers ? 'connected' : 'source_unavailable', api: 'extpmsapi', arrival, departure,
+      segment: String(segment), mapping, offeredTypes, checks };
+  }
   const [types, offers, specificRooms, services] = await Promise.all([
     inspect('resourcetypes', { SegmentID: filter.SegmentID }),
     inspect('avaliable_resourcetypes', filter),

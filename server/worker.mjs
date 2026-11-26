@@ -46,7 +46,7 @@ export default {
       'X-Content-Type-Options': 'nosniff',
     };
     let body = request.method === 'HEAD' ? null : Uint8Array.from(atob(embeddedFiles[path]), char => char.charCodeAt(0));
-    if (path === '/index.html' && body && ecviSettings(env)) {
+    if (path === '/index.html' && body && ecviAvailabilitySettings(env)) {
       body = new TextDecoder().decode(body).replace(
         'name="baikal-availability-url" content=""',
         'name="baikal-availability-url" content="./api/availability"',
