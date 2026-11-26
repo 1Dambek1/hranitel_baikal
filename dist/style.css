@@ -66,6 +66,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 14px 30px; margin-bottom: clamp(15px, 3vw, 28px); }
 .section-heading p { color: var(--muted); font-size: 14px; }
 
+.booking-page { padding-block: clamp(26px, 6vw, 62px); }
+.booking-page h1 { font-size: clamp(43px, 6vw, 76px); margin-bottom: 18px; }
+.booking-page-contact { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin-top: 18px; color: var(--muted); }
+
 .site-header { background: var(--forest); color: var(--white); }
 .header-row { min-height: 73px; padding-top: env(safe-area-inset-top, 0px); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 600 clamp(21px, 2.8vw, 28px)/.95 var(--display); letter-spacing: -.02em; }

@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 
 const project = new URL('../', import.meta.url);
 const dist = new URL('dist/', project);
-const names = ['index.html', 'style.css', 'app.js', 'concierge.js', 'room-directory.js', 'room-directory.json', 'photos/brand.png'];
+const names = ['index.html', 'booking.html', 'style.css', 'app.js', 'concierge.js', 'room-directory.js', 'room-directory.json', 'photos/brand.png'];
 for (const font of (await readdir(new URL('fonts/', dist))).sort()) {
   if (/^(cormorant|onest)(\.|-)/.test(font)) names.push('fonts/' + font);
 }
