@@ -110,7 +110,10 @@ roomOptions.innerHTML = rooms.map((room) =>
   '<button class="room-option" type="button" data-room="' + room.id + '" aria-pressed="false">' +
   room.name + '</button>'
 ).join('');
-bookingRoom.replaceChildren(...rooms.map((room) => new Option(room.name, room.id)));
+const categoryPrompt = new Option('Выберите категорию', '');
+categoryPrompt.disabled = true;
+bookingRoom.replaceChildren(categoryPrompt, ...rooms.map((room) => new Option(room.name, room.id)));
+bookingRoom.value = selectedRoom.id;
 
 function showRoom(room) {
   selectedRoom = room;
@@ -181,8 +184,20 @@ const roomNumbers = {
   4: [8, 9, 10, 11, 12],
   5: [13, 14, 15, 16, 17],
 };
+const roomDirectory = new Map();
 const floorTabs = [...floors.children];
 let activeFloor = 0;
+
+function updateFloorRoomCategories() {
+  for (const button of floorSelection.querySelectorAll('[data-unit]')) {
+    const category = rooms.find(room => room.id === roomDirectory.get(Number(button.dataset.unit))?.roomId);
+    if (!category || button.querySelector('small')) continue;
+    const label = document.createElement('small');
+    label.textContent = category.name;
+    button.append(label);
+    button.setAttribute('aria-label', 'Открыть номер № ' + button.dataset.unit + ' · ' + category.name);
+  }
+}
 
 function floorFeature(title, description, photo, attributes) {
   return '<button type="button" class="floor-feature" ' + attributes +
@@ -202,17 +217,18 @@ function selectFloor(tab) {
   if (floorSelection.hidden) return;
   const room = rooms.find(room => room.floor === Number(value));
   const numbers = roomNumbers[value] || [];
-  const roomLink = number =>
-    '<a class="floor-chip" data-reception href="' + receptionLink.href +
-    '" target="_blank" rel="noopener" aria-label="Спросить про номер № ' + number + '">№ ' + number + '</a>';
+  const roomButton = number =>
+    '<button class="floor-chip" type="button" data-unit="' + number +
+    '" aria-haspopup="dialog" aria-label="Открыть номер № ' + number + '">№ ' + number + '</button>';
   const feature = value === '1'
     ? floorFeature('Гастродом', '10:00–22:00 · столики и банкеты', 'dining.webp', 'data-floor-gastro')
     : room ? floorFeature(room.name, 'от ' + formatPrice(room.weekday) + ' за ночь', room.images[0],
       'data-floor-room="' + room.id + '"') : '';
-  const roomLinks = numbers.length ? '<div class="floor-options"><p>Спросить о номере на ' + value +
-    '-м этаже</p><div>' + numbers.map(roomLink).join('') +
+  const roomLinks = numbers.length ? '<div class="floor-options"><p>Номера на ' + value +
+    '-м этаже</p><div>' + numbers.map(roomButton).join('') +
     '<button type="button" class="floor-chip" data-room-catalog>Все категории</button></div></div>' : '';
   floorSelection.innerHTML = '<div class="floor-content">' + feature + roomLinks + '</div>';
+  updateFloorRoomCategories();
   if (!reducedMotion.matches) {
     floorSelection.firstElementChild.animate?.([
       { opacity: .45, transform: 'translateX(' + direction * 15 + 'px)' },
@@ -276,10 +292,11 @@ galleryFilters.addEventListener('click', event => {
 morePhotos.addEventListener('click', showMorePhotos);
 showMorePhotos();
 
-function openViewer(collection, index) {
+function openViewer(collection, index, context = null) {
   viewedPhotos = collection;
   photoIndex = index;
   showPhoto(index);
+  if (typeof setViewerActions === 'function') setViewerActions(context);
   photoViewer.showModal();
 }
 
@@ -309,7 +326,7 @@ roomDetail.addEventListener('click', event => {
   if (step) showRoomPhoto(roomPhotoIndex + Number(step.dataset.roomStep));
   if (event.target.closest('[data-room-photo]')) {
     const collection = selectedRoom.images.map(file => photos.find(([candidate]) => candidate === file));
-    openViewer(collection, roomPhotoIndex);
+    openViewer(collection, roomPhotoIndex, { roomId: selectedRoom.id });
   }
 });
 
@@ -402,9 +419,9 @@ function updateGuests() {
 
 function updateExtraGuests() {
   const room = rooms.find(item => item.id === bookingRoom.value);
-  const extra = Math.max(0, Number(guests.value) - room.base);
   extraFields.replaceChildren();
-  if (room.extra) return;
+  if (!room || room.extra) return;
+  const extra = Math.max(0, Number(guests.value) - room.base);
   for (let i = 0; i < extra; i++) {
     const label = document.createElement('label');
     label.textContent = 'Возраст гостя ' + (room.base + i + 1);
@@ -419,8 +436,19 @@ function updateExtraGuests() {
 }
 
 let availabilityRequest;
-function openBooking() {
-  bookingRoom.value = selectedRoom.id;
+let bookingUnit = null;
+function openBooking(context = {}, dates) {
+  bookingUnit = context.number ?? null;
+  bookingRoom.value = context.roomId ?? (bookingUnit ? '' : selectedRoom.id);
+  const note = document.querySelector('#booking-unit');
+  note.textContent = bookingUnit ? 'Номер № ' + bookingUnit : '';
+  note.hidden = !bookingUnit;
+  document.querySelector('#booking-calendar').hidden = !bookingUnit;
+  bookingAll.hidden = !availabilityUrl || Boolean(bookingUnit);
+  if (dates) {
+    arrival.value = dates.arrival;
+    departure.value = dates.departure;
+  }
   updateGuests();
   updateDates();
   estimate.hidden = true;
@@ -495,7 +523,7 @@ function renderAvailableCategories(availability, guestsCount) {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const all = availabilityUrl && event.submitter === bookingAll;
+  const all = availabilityUrl && !bookingUnit && event.submitter === bookingAll;
   if (all ? ![arrival, departure, guests].every(field => field.reportValidity()) : !form.reportValidity()) return;
   const room = rooms.find((item) => item.id === bookingRoom.value);
   const nights = (Date.parse(departure.value) - Date.parse(arrival.value)) / oneDay;
@@ -528,10 +556,12 @@ form.addEventListener('submit', async (event) => {
   price.textContent = formatPrice(lodging + extraDaily * nights) + ' · ночей: ' + nights;
   const text = document.createElement('p');
   const preliminary = 'Предварительная стоимость' + (extraDaily ? ' с доплатой за гостей' : '');
-  const fallback = preliminary + ' · наличие уточнит отель';
-  text.textContent = availabilityUrl ? preliminary + ' · проверяем наличие' : fallback;
+  const fallback = preliminary + (bookingUnit
+    ? ' · наличие номера № ' + bookingUnit + ' уточнит администратор'
+    : ' · наличие уточнит отель');
+  text.textContent = availabilityUrl && !bookingUnit ? preliminary + ' · проверяем наличие' : fallback;
   estimate.replaceChildren(price, text);
-  if (!availabilityUrl) return;
+  if (!availabilityUrl || bookingUnit) return;
 
   const request = new AbortController();
   availabilityRequest = request;

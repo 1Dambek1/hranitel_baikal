@@ -2,6 +2,7 @@ const contentType = {
   html: 'text/html; charset=utf-8',
   css: 'text/css; charset=utf-8',
   js: 'text/javascript; charset=utf-8',
+  json: 'application/json; charset=utf-8',
   webp: 'image/webp',
   png: 'image/png',
   woff2: 'font/woff2',
@@ -28,6 +29,9 @@ export default {
     }
     if (pathname === '/api/availability' && request.method === 'GET') {
       return checkEcviAvailability(requestUrl, env, request.headers.get('Origin'));
+    }
+    if (pathname === '/api/calendar' && request.method === 'GET') {
+      return checkEcviCalendar(requestUrl, env, request.headers.get('Origin'));
     }
     if (pathname === '/hotel-contact.json') {
       const phone = /^\+7\d{10}$/.test(env.MAX_ADMIN_PHONE ?? '') ? env.MAX_ADMIN_PHONE : '+79953235878';

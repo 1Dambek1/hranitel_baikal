@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 
 const project = new URL('../', import.meta.url);
 const dist = new URL('dist/', project);
-const names = ['index.html', 'style.css', 'app.js', 'concierge.js', 'photos/brand.png'];
+const names = ['index.html', 'style.css', 'app.js', 'concierge.js', 'room-directory.js', 'room-directory.json', 'photos/brand.png'];
 for (const font of (await readdir(new URL('fonts/', dist))).sort()) {
   if (/^(cormorant|onest)(\.|-)/.test(font)) names.push('fonts/' + font);
 }
@@ -20,6 +20,7 @@ if (!browserSource.startsWith('const rooms =') || roomsEnd === -1) {
 }
 const bot = await readFile(new URL('bot.mjs', import.meta.url), 'utf8');
 const ecvi = await readFile(new URL('ecvi.mjs', import.meta.url), 'utf8');
+const calendar = await readFile(new URL('calendar.mjs', import.meta.url), 'utf8');
 const worker = await readFile(new URL('worker.mjs', import.meta.url), 'utf8');
 const output = new URL('server/', dist);
 await mkdir(output, { recursive: true });
@@ -28,5 +29,6 @@ await writeFile(new URL('index.js', output), [
   'const embeddedFiles = ' + JSON.stringify(files) + ';',
   bot,
   ecvi,
+  calendar,
   worker,
 ].join('\n\n'));

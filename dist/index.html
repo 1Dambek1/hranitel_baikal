@@ -13,9 +13,10 @@
   <link rel="preload" as="image" href="photos/winter-cover.webp" imagesrcset="photos/winter-mobile.webp 640w, photos/winter-cover.webp 1024w" imagesizes="(max-width: 680px) 100vw, 60vw">
   <link rel="preload" as="font" href="fonts/cormorant-cyr.woff2" type="font/woff2" crossorigin>
   <link rel="icon" href="photos/brand.png" type="image/png">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
   <script src="https://st.max.ru/js/max-web-app.js" async></script>
-  <script src="app.js?v=16" defer></script>
+  <script src="app.js?v=18" defer></script>
+  <script src="room-directory.js?v=18" defer></script>
   <script src="concierge.js?v=17" defer></script>
 </head>
 <body>
@@ -162,9 +163,11 @@
   <dialog class="sheet booking-dialog" id="booking" aria-labelledby="booking-title">
     <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
     <h2 id="booking-title">Ваши даты</h2>
+    <p id="booking-unit" class="booking-unit" hidden></p>
     <form id="booking-form">
       <div class="dates"><label>Заезд<input type="date" name="arrival" required></label><label>Выезд<input type="date" name="departure" required></label></div>
-      <label>Номер<select name="room" required></select></label>
+      <button class="text-link booking-calendar" id="booking-calendar" type="button" hidden>Календарь номера</button>
+      <label>Категория<select name="room" required></select></label>
       <label>Гости<select name="guests" required></select></label>
       <div id="extra-guest-fields"></div>
       <button class="button primary" id="booking-submit" type="submit">Рассчитать стоимость <svg class="icon"><use href="#i-arrow"/></svg></button>
@@ -174,6 +177,53 @@
     <a class="button primary booking-contact" id="hotel-booking" target="_blank" rel="noopener noreferrer" hidden>Забронировать онлайн</a>
     <a class="button outline booking-contact" data-reception href="tel:+79953235878" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg>Связаться по брони</a>
   </dialog>
+
+  <dialog class="sheet" id="room-unit" aria-labelledby="unit-title">
+    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть номер"><svg class="icon"><use href="#i-close"/></svg></button>
+    <h2 id="unit-title"></h2>
+    <p class="unit-context" id="unit-context"></p>
+    <div class="unit-photos" id="unit-photos"></div>
+    <div class="room-photo-actions" id="unit-actions"></div>
+  </dialog>
+
+  <dialog class="sheet room-calendar" id="room-calendar" aria-labelledby="calendar-title">
+    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть календарь"><svg class="icon"><use href="#i-close"/></svg></button>
+    <h2 id="calendar-title">Выбор даты</h2>
+    <p class="unit-context" id="calendar-context"></p>
+    <div class="calendar-month">
+      <button class="icon-button" type="button" data-month-step="-1" aria-label="Предыдущий месяц"><svg class="icon"><use href="#i-back"/></svg></button>
+      <strong id="calendar-month-label" aria-live="polite"></strong>
+      <button class="icon-button" type="button" data-month-step="1" aria-label="Следующий месяц"><svg class="icon"><use href="#i-next"/></svg></button>
+    </div>
+    <div class="calendar-grid" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+    <div class="calendar-grid" id="calendar-days" aria-label="Дни месяца"></div>
+    <div class="calendar-legend">
+      <span data-night="free">Свободно</span><span data-night="busy">Недоступно</span><span data-night="unknown">Не проверено</span>
+    </div>
+    <p id="calendar-status" class="unit-context" role="status"></p>
+    <button class="button primary calendar-apply" id="calendar-apply" type="button" disabled>Выбрать даты</button>
+  </dialog>
+
+  <dialog class="sheet" id="room-qr" aria-labelledby="room-qr-title">
+    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть оплату"><svg class="icon"><use href="#i-close"/></svg></button>
+    <h2 id="room-qr-title">Оплата по QR</h2>
+    <p class="unit-context">Администратор пришлёт платёжный QR для вашей брони</p>
+    <a class="button primary booking-contact" data-reception href="tel:+79953235878" target="_blank" rel="noopener">Получить QR у администратора</a>
+  </dialog>
+
+  <dialog class="sheet" id="room-hold" aria-labelledby="room-hold-title">
+    <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
+    <h2 id="room-hold-title">Фиксация брони</h2>
+    <p class="unit-context">Администратор проверит даты и скажет, до какого времени сможет удержать номер без оплаты</p>
+    <a class="button primary booking-contact" data-reception href="tel:+79953235878" target="_blank" rel="noopener">Попросить удержать номер</a>
+  </dialog>
+
+  <template id="room-actions-template">
+    <button class="button primary" type="button" data-unit-action="book">Бронь</button>
+    <button class="button outline" type="button" data-unit-action="hold">Фиксация брони</button>
+    <button class="button outline" type="button" data-unit-action="calendar">Выбор даты</button>
+    <button class="button outline" type="button" data-unit-action="qr">Оплата по QR</button>
+  </template>
 
   <dialog class="sheet reception-help" id="help" aria-labelledby="help-title">
     <button class="icon-button close-dialog" type="button" data-close aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
@@ -193,6 +243,7 @@
       <span id="viewer-count" aria-live="polite"></span>
       <button class="icon-button" type="button" data-photo-step="1" aria-label="Следующее фото"><svg class="icon"><use href="#i-next"/></svg></button>
     </div>
+    <div class="room-photo-actions" id="viewer-room-actions" hidden></div>
   </dialog>
 </body>
 </html>

@@ -92,7 +92,7 @@ function matchEcviRoomType(room, types) {
   return matching.length === 1 && matching[0]?.ResourceTypeID ? String(matching[0].ResourceTypeID) : null;
 }
 
-async function checkEcviAvailability(requestUrl, env, origin) {
+function ecviJsonResponder(env, origin) {
   const headers = { 'Cache-Control': 'no-store', Vary: 'Origin' };
   try {
     const client = new URL(env.MINI_APP_ORIGIN);
@@ -103,8 +103,12 @@ async function checkEcviAvailability(requestUrl, env, origin) {
   } catch {
     // Same-origin availability works without a separate mini-app origin.
   }
-  const respond = (status, extra = {}, httpStatus = 200) =>
+  return (status, extra = {}, httpStatus = 200) =>
     Response.json({ status, ...extra }, { status: httpStatus, headers });
+}
+
+async function checkEcviAvailability(requestUrl, env, origin) {
+  const respond = ecviJsonResponder(env, origin);
   const query = requestUrl.searchParams;
   const roomId = query.get('room');
   const all = roomId === 'all';
