@@ -1,6 +1,7 @@
 const miniApp = 'https://max.ru/id3812997183_bot?startapp';
 const hotelPhone = '+7 995 323-58-78';
 const hotelAddress = 'Листвянка, ул. Партизанская, 1';
+const gastroMenu = 'https://hranitelbaikala.myresto.online/ru/category/zakuski';
 const routeUrl = 'https://yandex.ru/maps/?rtext=~' + encodeURIComponent(hotelAddress);
 const dayMs = 86_400_000;
 const dayAtHotel = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Irkutsk', dateStyle: 'short' });
@@ -105,7 +106,7 @@ function screen(payload, today, siteOrigin) {
     case 'room': return room ? showRoom(room) : listRooms(false);
     case 'book': return room ? book(room, date, nights, guests, today) : listRooms(true);
     case 'map': return card('**Как добраться**\n' + hotelAddress + '\nРесепшен: ' + hotelPhone, [[link('Яндекс Карты', routeUrl)], homeRow]);
-    case 'gastro': return card('**Гастродом**\n10:00–22:00 · до 50 гостей\nСтолики, банкеты и свадьбы. Бронирование и банкетное меню: +7 995 165-28-78.', [homeRow]);
+    case 'gastro': return card('**Гастродом**\n10:00–22:00 · до 50 гостей\nСтолики, банкеты и свадьбы. Бронирование и банкетное меню: +7 995 165-28-78.', [[link('Открыть меню', gastroMenu)], homeRow]);
     case 'hall': return card('**Конференц-зал**\n40 мест · 1 500 ₽/час\nПанорамная веранда, оборудование и сопровождение. Свободное время: ' + hotelPhone, [[link('Цены оборудования', siteOrigin ? siteOrigin + '/#conference' : miniApp)], homeRow]);
     case 'photos': return card('**Хранитель Байкала зимой**\nБольше фото отеля и номеров в галерее', [[link('Фотогалерея', siteOrigin ? siteOrigin + '/#gallery' : miniApp)], homeRow], siteOrigin ? siteOrigin + '/photos/winter.webp' : null);
     case 'bye': return card('До встречи на Байкале!', [homeRow]);

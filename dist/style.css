@@ -193,6 +193,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .event-content { padding: 0 14px 15px; animation: rise-in .28s var(--ease) both; }
 .event-content > * + * { margin-top: 9px; }
 .event-content summary { cursor: pointer; }
+.gastro-actions { display: grid; justify-items: start; gap: 4px; }
+.gastro-actions .text-link { min-height: 44px; }
 #equipment { font-size: 13px; }
 #equipment div { display: flex; justify-content: space-between; gap: 12px; margin: 4px 0; }
 #equipment dd { margin: 0; flex: none; }
